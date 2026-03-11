@@ -16,6 +16,7 @@
         >
           {{ item.label }}
         </RouterLink>
+        <button type="button" class="logout-btn" @click="handleSignOut">Sign out</button>
       </nav>
     </div>
   </header>
@@ -23,6 +24,7 @@
 
 <script setup>
 import { useRoute } from "vue-router";
+import { signOut } from "aws-amplify/auth";
 
 const route = useRoute();
 
@@ -33,6 +35,14 @@ const navItems = [
 ];
 
 const isActive = (path) => route.path === path;
+
+const handleSignOut = async () => {
+  try {
+    await signOut({ global: false });
+  } catch (error) {
+    console.error("Failed to sign out", error);
+  }
+};
 </script>
 
 <style scoped>
@@ -76,6 +86,23 @@ const isActive = (path) => route.path === path;
 .nav-pill.active {
   color: #ffffff;
   background: #172034;
+}
+
+.logout-btn {
+  border: 1px solid #d2dae6;
+  background: #fff;
+  color: #172034;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover,
+.logout-btn:focus-visible {
+  border-color: #172034;
+  background: #eef2f7;
 }
 
 .user-label {

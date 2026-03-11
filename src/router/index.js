@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
 import HomeView from "../views/HomeView.vue";
 import AwarenessView from "../views/AwarenessView.vue";
 import PreventionView from "../views/PreventionView.vue";
@@ -6,10 +7,40 @@ import PreventionView from "../views/PreventionView.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/", name: "home", component: HomeView },
-    { path: "/awareness", name: "awareness", component: AwarenessView },
-    { path: "/prevention", name: "prevention", component: PreventionView },
+    { path: "/", name: "home", component: HomeView, meta: { requiresAuth: true } },
+    {
+      path: "/awareness",
+      name: "awareness",
+      component: AwarenessView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/prevention",
+      name: "prevention",
+      component: PreventionView,
+      meta: { requiresAuth: true },
+    },
   ],
+});
+
+const hasOAuthCode = (to) => typeof to.query.code === "string" && typeof to.query.state === "string";
+
+router.beforeEach(async (to) => {
+  if (!to.meta.requiresAuth) {
+    return true;
+  }
+
+  if (hasOAuthCode(to)) {
+    return true;
+  }
+
+  try {
+    await getCurrentUser();
+    return true;
+  } catch {
+    await signInWithRedirect({ customState: to.fullPath });
+    return false;
+  }
 });
 
 export default router;
