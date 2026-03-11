@@ -31,9 +31,15 @@ router.beforeEach(async (to) => {
     return true;
   }
 
-  // If Cognito returns an OAuth error in query params, clear them first to avoid redirect URL growth.
+  // Stop redirect loop when Cognito returns an OAuth error and surface it in console for diagnosis.
   if (hasOAuthError(to)) {
-    return { path: to.path, query: {}, hash: to.hash };
+    console.error("Cognito OAuth error:", {
+      error: to.query.error,
+      errorDescription: to.query.error_description,
+      state: to.query.state,
+      fullPath: to.fullPath,
+    });
+    return true;
   }
 
   if (hasOAuthCode(to)) {
