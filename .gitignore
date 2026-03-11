@@ -1,2 +1,8 @@
 *.pdf
 *.docx
+node_modules/
+.env
+dist/
+build/
+npm-debug.log
+*.md
