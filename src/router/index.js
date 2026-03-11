@@ -33,13 +33,16 @@ router.beforeEach(async (to) => {
 
   // Stop redirect loop when Cognito returns an OAuth error and surface it in console for diagnosis.
   if (hasOAuthError(to)) {
-    console.error("Cognito OAuth error:", {
-      error: to.query.error,
-      errorDescription: to.query.error_description,
-      state: to.query.state,
-      fullPath: to.fullPath,
-    });
-    return true;
+    const error = String(to.query.error ?? "");
+    const errorDescription = String(to.query.error_description ?? "");
+    const state = String(to.query.state ?? "");
+
+    console.error(
+      `[Cognito OAuth error] error=${error}; description=${errorDescription}; state=${state}; fullPath=${to.fullPath}`,
+    );
+
+    // Block protected route access when OAuth callback fails.
+    return false;
   }
 
   if (hasOAuthCode(to)) {
