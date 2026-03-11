@@ -24,10 +24,16 @@ const router = createRouter({
 });
 
 const hasOAuthCode = (to) => typeof to.query.code === "string" && typeof to.query.state === "string";
+const hasOAuthError = (to) => typeof to.query.error === "string";
 
 router.beforeEach(async (to) => {
   if (!to.meta.requiresAuth) {
     return true;
+  }
+
+  // If Cognito returns an OAuth error in query params, clear them first to avoid redirect URL growth.
+  if (hasOAuthError(to)) {
+    return { path: to.path, query: {}, hash: to.hash };
   }
 
   if (hasOAuthCode(to)) {
@@ -38,7 +44,7 @@ router.beforeEach(async (to) => {
     await getCurrentUser();
     return true;
   } catch {
-    await signInWithRedirect({ customState: to.fullPath });
+    await signInWithRedirect({ customState: to.path });
     return false;
   }
 });
