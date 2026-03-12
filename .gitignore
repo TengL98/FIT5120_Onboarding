@@ -6,3 +6,11 @@ dist/
 build/
 npm-debug.log
 *.md
+.vite/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+.vite/
+node_modules/
+dist/
+.env
