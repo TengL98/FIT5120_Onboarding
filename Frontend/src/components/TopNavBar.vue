@@ -3,7 +3,7 @@
     <div class="container-xl py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
       <RouterLink to="/" class="brand text-decoration-none d-inline-flex align-items-center gap-2">
         <span class="logo-mark" aria-hidden="true"></span>
-        <span class="brand-text">SolarSense</span>
+        <span class="brand-text">SunSense</span>
       </RouterLink>
 
       <nav aria-label="Main navigation" class="d-flex align-items-center gap-2">

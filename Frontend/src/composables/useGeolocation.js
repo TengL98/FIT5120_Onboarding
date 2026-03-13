@@ -50,6 +50,14 @@ function geolocationNotAvailable() {
   };
 }
 
+function isPermissionDenied(error) {
+  return (
+    Number(error?.code) === 1 ||
+    error?.name === "PermissionDeniedError" ||
+    error?.name === "NotAllowedError"
+  );
+}
+
 function getCurrentPosition(options) {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(resolve, reject, options);
@@ -81,6 +89,15 @@ export function useGeolocation() {
         error: null,
       };
     } catch (error) {
+      if (isPermissionDenied(error)) {
+        return {
+          ...FALLBACK_LOCATION,
+          usedFallback: true,
+          // Permission denial is an expected user choice, so keep UX calm.
+          error: null,
+        };
+      }
+
       return {
         ...FALLBACK_LOCATION,
         usedFallback: true,
