@@ -18,6 +18,58 @@
         <span>{{ locationName }}</span>
       </p>
 
+      <div class="hero-search-wrap" role="search" aria-label="Location search">
+        <label for="heroSearch" class="visually-hidden">Search suburb</label>
+        <div class="hero-search-field">
+          <span class="hero-search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" />
+              <path d="M16 16L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </span>
+          <input
+            id="heroSearch"
+            :value="searchQuery"
+            class="hero-search-input"
+            type="text"
+            placeholder="Search suburb"
+            autocomplete="off"
+            @input="emit('update:search-query', $event.target.value)"
+            @focus="emit('open-suggestions')"
+            @blur="emit('close-suggestions')"
+          />
+        </div>
+
+        <ul
+          v-if="showSuggestions"
+          class="hero-suggestion-list list-unstyled mb-0"
+          role="listbox"
+          aria-label="Location suggestions"
+        >
+          <li v-for="location in searchSuggestions" :key="location.id">
+            <button
+              class="hero-suggestion-item"
+              type="button"
+              @mousedown.prevent="emit('select-location', location)"
+            >
+              {{ location.name }}
+            </button>
+          </li>
+        </ul>
+
+        <div class="hero-search-meta">
+          <button class="hero-location-action" type="button" @click="emit('use-current-location')">
+            Use current location
+          </button>
+          <span class="hero-location-source">
+            {{ locationMode === "live" ? "Live" : "Manual" }}
+          </span>
+        </div>
+
+        <p v-if="searchLoading" class="hero-search-status mb-0">Searching locations...</p>
+        <p v-else-if="searchError" class="hero-search-status mb-0">{{ searchError }}</p>
+      </div>
+
       <div v-if="loading" class="hero-loading mx-auto"></div>
       <p v-else class="hero-value">{{ Math.round(currentUv) }}</p>
 
@@ -55,7 +107,39 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchQuery: {
+    type: String,
+    default: "",
+  },
+  searchSuggestions: {
+    type: Array,
+    default: () => [],
+  },
+  showSuggestions: {
+    type: Boolean,
+    default: false,
+  },
+  searchLoading: {
+    type: Boolean,
+    default: false,
+  },
+  searchError: {
+    type: String,
+    default: "",
+  },
+  locationMode: {
+    type: String,
+    default: "live",
+  },
 });
+
+const emit = defineEmits([
+  "update:search-query",
+  "open-suggestions",
+  "close-suggestions",
+  "use-current-location",
+  "select-location",
+]);
 
 const UV_THEME_BY_LEVEL = {
   low: {
@@ -225,7 +309,117 @@ const uvTheme = computed(() => {
 .hero-location {
   color: rgba(30, 41, 59, 0.82);
   font-weight: 600;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.7rem;
+}
+
+.hero-search-wrap {
+  position: relative;
+  width: min(470px, 100%);
+  margin: 0 auto 0.7rem;
+  text-align: left;
+}
+
+.hero-search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px) saturate(130%);
+  padding: 0.42rem 0.85rem;
+}
+
+.hero-search-icon {
+  width: 17px;
+  height: 17px;
+  color: rgba(15, 23, 42, 0.52);
+  flex: 0 0 auto;
+}
+
+.hero-search-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-search-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.12rem 0;
+}
+
+.hero-search-input::placeholder {
+  color: rgba(30, 41, 59, 0.56);
+}
+
+.hero-suggestion-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
+}
+
+.hero-suggestion-item {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 0.58rem 0.82rem;
+  color: #1e293b;
+  font-size: 0.92rem;
+}
+
+.hero-suggestion-item:hover {
+  background: rgba(248, 250, 252, 0.96);
+}
+
+.hero-search-meta {
+  margin-top: 0.48rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.hero-location-action {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgba(15, 23, 42, 0.74);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.hero-location-action:hover {
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.hero-location-source {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(30, 41, 59, 0.58);
+}
+
+.hero-search-status {
+  margin-top: 0.18rem;
+  font-size: 0.79rem;
+  color: rgba(30, 41, 59, 0.72);
+  min-height: 1rem;
 }
 
 .dot {
@@ -240,7 +434,7 @@ const uvTheme = computed(() => {
   line-height: 1;
   font-weight: 800;
   letter-spacing: -0.03em;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.28rem;
   color: #0f172a;
 }
 
@@ -248,7 +442,7 @@ const uvTheme = computed(() => {
   width: min(260px, 55vw);
   height: 88px;
   border-radius: 18px;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.28rem;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.5) 25%, rgba(255, 255, 255, 0.82) 50%, rgba(255, 255, 255, 0.5) 75%);
   background-size: 200% 100%;
   animation: pulse 1.5s infinite;
@@ -307,6 +501,14 @@ const uvTheme = computed(() => {
   .hero-panel {
     border-radius: 20px;
     padding: 0.95rem 0.85rem 0.85rem;
+  }
+
+  .hero-search-wrap {
+    margin-bottom: 0.55rem;
+  }
+
+  .hero-search-field {
+    padding: 0.4rem 0.75rem;
   }
 }
 
