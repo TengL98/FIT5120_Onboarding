@@ -74,6 +74,7 @@
       <p v-else class="hero-value">{{ Math.round(currentUv) }}</p>
 
       <p class="hero-category" :style="{ color: uvColor }">{{ uvCategory }}</p>
+      <p v-if="peakWindowText" class="hero-peak-window">Peak UV: {{ peakWindowText }}</p>
       <p class="hero-message mb-0">{{ uvShortMessage }}</p>
     </div>
   </section>
@@ -130,6 +131,10 @@ const props = defineProps({
   locationMode: {
     type: String,
     default: "live",
+  },
+  peakWindowText: {
+    type: String,
+    default: "",
   },
 });
 
@@ -453,6 +458,13 @@ const uvTheme = computed(() => {
   font-size: 1.16rem;
   font-weight: 700;
   margin-bottom: 0.24rem;
+}
+
+.hero-peak-window {
+  color: rgba(30, 41, 59, 0.62);
+  font-size: 0.86rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
 }
 
 .hero-message {

@@ -101,6 +101,8 @@ import {
 } from "../composables/useUvRules";
 import { useUvData } from "../composables/useUvData";
 
+const SAVED_LOCATION_KEY = "ss.selectedLocation";
+
 const state = reactive({
   loading: true,
   error: null,
@@ -204,6 +206,24 @@ function applyCustomUv() {
   setUvOverride(customUvInput.value);
 }
 
+function saveSelectedLocation(location) {
+  try {
+    const payload = {
+      name: location?.name || "Melbourne, Australia",
+      latitude: Number(location?.latitude),
+      longitude: Number(location?.longitude),
+    };
+
+    if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
+      return;
+    }
+
+    window.localStorage.setItem(SAVED_LOCATION_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 function isActivePreset(value) {
   return state.uvOverride !== null && Math.round(state.uvOverride) === value;
 }
@@ -223,6 +243,7 @@ async function applyLocationAndLoadUv(location, mode) {
   state.locationName = location.name;
   state.latitude = location.latitude;
   state.longitude = location.longitude;
+  saveSelectedLocation(location);
 
   const uvData = await getUvData(state.latitude, state.longitude);
 
