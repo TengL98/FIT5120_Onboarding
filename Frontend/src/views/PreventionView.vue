@@ -142,6 +142,98 @@
     </section>
 
     <section
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-4"
+      style="--reveal-delay: 270ms"
+      aria-label="SunCare Timer"
+    >
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+        <div>
+          <h2 class="section-heading mb-1">SunCare Timer</h2>
+          <p class="card-subtitle mb-0">Stay protected by reapplying sunscreen regularly.</p>
+        </div>
+        <span class="suggested-badge" aria-label="Suggested interval">Suggested</span>
+      </div>
+
+      <div class="timer-recommendation-card mb-3">
+        <p class="timer-recommendation-label mb-1">UV-Based Recommendation</p>
+        <p class="timer-recommendation-value mb-0">{{ recommendationMessage }}</p>
+      </div>
+
+      <div class="mb-3">
+        <p class="timer-section-label mb-2">Preset Timer Options</p>
+        <div class="preset-timer-row">
+          <button
+            v-for="preset in PRESET_TIMERS"
+            :key="preset.minutes"
+            type="button"
+            class="preset-timer-pill"
+            :class="{ active: selectedTimerMode === 'preset' && selectedPresetMinutes === preset.minutes }"
+            @click="selectPresetTimer(preset.minutes)"
+          >
+            <span>{{ preset.label }}</span>
+            <span v-if="isPresetSuggested(preset.minutes)" class="pill-suggested">Suggested</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <p class="timer-section-label mb-2">Custom Timer Picker</p>
+        <div class="timer-wheel-wrap" role="group" aria-label="Custom timer picker">
+          <div class="timer-wheel-column">
+            <p class="wheel-label">Hours</p>
+            <div class="wheel-list" role="listbox" aria-label="Hours">
+              <button
+                v-for="hour in TIMER_HOUR_OPTIONS"
+                :key="`hour-${hour}`"
+                type="button"
+                class="wheel-option"
+                :class="{ active: customTimerHours === hour }"
+                @click="selectCustomHour(hour)"
+              >
+                {{ hour }}
+              </button>
+            </div>
+          </div>
+          <div class="timer-wheel-column">
+            <p class="wheel-label">Minutes</p>
+            <div class="wheel-list" role="listbox" aria-label="Minutes">
+              <button
+                v-for="minute in TIMER_MINUTE_OPTIONS"
+                :key="`minute-${minute}`"
+                type="button"
+                class="wheel-option"
+                :class="{ active: customTimerMinutes === minute }"
+                @click="selectCustomMinute(minute)"
+              >
+                {{ String(minute).padStart(2, '0') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <button class="start-reminder-btn" type="button" @click="startSuncareReminder">
+          Start Reminder
+        </button>
+        <button
+          v-if="timerRunning"
+          class="stop-reminder-btn"
+          type="button"
+          @click="stopSuncareReminder"
+        >
+          Stop
+        </button>
+      </div>
+
+      <div v-if="timerHasStarted" class="countdown-panel" role="status" aria-live="polite">
+        <p class="countdown-label mb-1">Next sunscreen reminder</p>
+        <p class="countdown-value mb-1">{{ formattedCountdown }}</p>
+        <p class="countdown-helper mb-0">Reapply sunscreen to maintain protection.</p>
+      </div>
+    </section>
+
+    <section
       class="soft-card prevention-card reveal-card p-3 p-md-4"
       style="--reveal-delay: 300ms"
       aria-label="Protection gear recommendations"
@@ -197,6 +289,22 @@
         {{ state.debugNote }}
       </p>
     </section>
+
+    <div v-if="showReminderModal" class="timer-modal-backdrop" role="presentation">
+      <div
+        class="timer-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="timerModalTitle"
+        aria-describedby="timerModalMessage"
+      >
+        <h3 id="timerModalTitle" class="timer-modal-title mb-2">Time to Reapply Sunscreen</h3>
+        <p id="timerModalMessage" class="timer-modal-message mb-3">
+          Protect your skin from UV exposure. Apply sunscreen again.
+        </p>
+        <button class="timer-modal-btn" type="button" @click="showReminderModal = false">OK</button>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -236,8 +344,24 @@ const skipNextSearch = ref(false);
 const selectedSkinTypeId = ref(1);
 const presetUvValues = [1, 4, 7, 9, 12];
 const customUvInput = ref(6);
+const PRESET_TIMERS = [
+  { label: "1 hour", minutes: 60 },
+  { label: "2 hours", minutes: 120 },
+  { label: "3 hours", minutes: 180 },
+];
+const TIMER_HOUR_OPTIONS = Array.from({ length: 13 }, (_, idx) => idx);
+const TIMER_MINUTE_OPTIONS = Array.from({ length: 59 }, (_, idx) => idx + 1);
+const selectedTimerMode = ref("preset");
+const selectedPresetMinutes = ref(120);
+const customTimerHours = ref(1);
+const customTimerMinutes = ref(30);
+const countdownSeconds = ref(0);
+const timerEndAt = ref(0);
+const timerHasStarted = ref(false);
+const showReminderModal = ref(false);
 let searchTimer = null;
 let searchToken = 0;
+let reminderTicker = null;
 
 const SKIN_TYPES = [
   {
@@ -375,6 +499,107 @@ const gearRecommendations = computed(() => {
     },
   ];
 });
+
+const recommendedIntervalMinutes = computed(() => {
+  const uv = Number(state.currentUv || 0);
+  if (uv < 3) {
+    return null;
+  }
+  if (uv < 8) {
+    return 120;
+  }
+  if (uv < 11) {
+    return 90;
+  }
+  return 60;
+});
+
+const recommendationMessage = computed(() => {
+  const recommended = recommendedIntervalMinutes.value;
+  if (recommended === null) {
+    return "Recommended reminder based on today's UV: Optional reminder";
+  }
+  const hour = Math.floor(recommended / 60);
+  const minute = recommended % 60;
+  if (minute === 0) {
+    return `Recommended reminder based on today's UV: ${hour} ${hour === 1 ? "hour" : "hours"}`;
+  }
+  return `Recommended reminder based on today's UV: ${hour} hour ${minute} minutes`;
+});
+
+const timerRunning = computed(() => countdownSeconds.value > 0 && Boolean(reminderTicker));
+
+const activeTimerTotalMinutes = computed(() => {
+  if (selectedTimerMode.value === "custom") {
+    return customTimerHours.value * 60 + customTimerMinutes.value;
+  }
+  return selectedPresetMinutes.value;
+});
+
+const formattedCountdown = computed(() => {
+  const safeSeconds = Math.max(0, Number(countdownSeconds.value || 0));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+});
+
+function isPresetSuggested(minutes) {
+  return recommendedIntervalMinutes.value === minutes;
+}
+
+function selectPresetTimer(minutes) {
+  selectedTimerMode.value = "preset";
+  selectedPresetMinutes.value = minutes;
+}
+
+function selectCustomHour(hour) {
+  selectedTimerMode.value = "custom";
+  customTimerHours.value = hour;
+}
+
+function selectCustomMinute(minute) {
+  selectedTimerMode.value = "custom";
+  customTimerMinutes.value = minute;
+}
+
+function clearReminderTicker() {
+  if (reminderTicker) {
+    clearInterval(reminderTicker);
+    reminderTicker = null;
+  }
+}
+
+function stopSuncareReminder() {
+  clearReminderTicker();
+  timerEndAt.value = 0;
+  countdownSeconds.value = 0;
+}
+
+function startSuncareReminder() {
+  const totalMinutes = Math.max(0, Number(activeTimerTotalMinutes.value || 0));
+  const totalSeconds = totalMinutes * 60;
+
+  if (totalSeconds <= 0) {
+    return;
+  }
+
+  clearReminderTicker();
+  timerHasStarted.value = true;
+  showReminderModal.value = false;
+  timerEndAt.value = Date.now() + totalSeconds * 1000;
+  countdownSeconds.value = totalSeconds;
+
+  reminderTicker = setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((timerEndAt.value - Date.now()) / 1000));
+    countdownSeconds.value = remaining;
+
+    if (remaining <= 0) {
+      clearReminderTicker();
+      showReminderModal.value = true;
+    }
+  }, 1000);
+}
 
 function saveSelectedLocation(location) {
   try {
@@ -608,6 +833,7 @@ onBeforeUnmount(() => {
   if (searchTimer) {
     clearTimeout(searchTimer);
   }
+  clearReminderTicker();
 });
 
 onMounted(() => {
@@ -881,6 +1107,220 @@ onMounted(() => {
   color: var(--ss-muted);
 }
 
+.suggested-badge,
+.pill-suggested {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: rgba(31, 52, 85, 0.82);
+  border: 1px solid rgba(19, 33, 59, 0.14);
+  background: rgba(244, 248, 253, 0.98);
+  padding: 0.18rem 0.5rem;
+}
+
+.timer-recommendation-card {
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.96), rgba(255, 255, 255, 0.98));
+  padding: 0.75rem 0.85rem;
+}
+
+.timer-recommendation-label,
+.timer-section-label {
+  color: var(--ss-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.timer-recommendation-value {
+  color: rgba(21, 34, 56, 0.88);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.preset-timer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.preset-timer-pill {
+  border: 1px solid rgba(19, 33, 59, 0.14);
+  background: #fff;
+  color: rgba(21, 34, 56, 0.9);
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0.42rem 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.preset-timer-pill:hover {
+  border-color: rgba(46, 70, 112, 0.34);
+  box-shadow: 0 8px 18px rgba(19, 33, 59, 0.08);
+}
+
+.preset-timer-pill.active {
+  border-color: rgba(43, 74, 124, 0.45);
+  background: rgba(244, 248, 255, 0.95);
+  box-shadow: 0 10px 20px rgba(44, 75, 125, 0.12);
+}
+
+.timer-wheel-wrap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.timer-wheel-column {
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  border-radius: 18px;
+  background: rgba(250, 252, 255, 0.95);
+  padding: 0.6rem;
+}
+
+.wheel-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ss-muted);
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.wheel-list {
+  max-height: 148px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scroll-snap-type: y mandatory;
+  padding-right: 0.2rem;
+}
+
+.wheel-option {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(21, 34, 56, 0.82);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.48rem 0.55rem;
+  text-align: center;
+  scroll-snap-align: center;
+  transition: all 0.18s ease;
+}
+
+.wheel-option:hover {
+  background: rgba(236, 243, 252, 0.8);
+}
+
+.wheel-option.active {
+  background: #fff;
+  color: var(--ss-text);
+  box-shadow: 0 6px 14px rgba(19, 33, 59, 0.08);
+}
+
+.start-reminder-btn,
+.stop-reminder-btn,
+.timer-modal-btn {
+  border-radius: 999px;
+  border: 0;
+  min-height: 42px;
+  padding: 0.42rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.start-reminder-btn,
+.timer-modal-btn {
+  background: linear-gradient(180deg, rgba(37, 65, 111, 0.95), rgba(26, 48, 84, 0.98));
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(19, 33, 59, 0.2);
+}
+
+.start-reminder-btn:hover,
+.timer-modal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.stop-reminder-btn {
+  background: rgba(243, 246, 251, 0.95);
+  color: rgba(21, 34, 56, 0.86);
+  border: 1px solid rgba(19, 33, 59, 0.12);
+}
+
+.countdown-panel {
+  border-radius: 18px;
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  background: rgba(252, 253, 255, 0.98);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 0.78rem 0.9rem;
+}
+
+.countdown-label {
+  color: var(--ss-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.countdown-value {
+  color: rgba(21, 34, 56, 0.93);
+  font-size: clamp(1.5rem, 3.4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.countdown-helper {
+  color: var(--ss-muted);
+  font-size: 0.87rem;
+  font-weight: 600;
+}
+
+.timer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 29, 48, 0.34);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.timer-modal {
+  width: min(92vw, 420px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, rgba(248, 252, 255, 0.96), rgba(255, 255, 255, 0.98));
+  box-shadow: 0 24px 40px rgba(19, 33, 59, 0.24);
+  padding: 1rem 1rem 1.05rem;
+}
+
+.timer-modal-title {
+  color: var(--ss-text);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.timer-modal-message {
+  color: var(--ss-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 @keyframes cardReveal {
   to {
     opacity: 1;
@@ -898,6 +1338,10 @@ onMounted(() => {
   .prevention-card,
   .location-prompt-card {
     border-radius: 24px;
+  }
+
+  .timer-wheel-wrap {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .advice-grid,
