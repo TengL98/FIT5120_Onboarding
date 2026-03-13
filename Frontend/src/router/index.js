@@ -4,6 +4,34 @@ import HomeView from "../views/HomeView.vue";
 import AwarenessView from "../views/AwarenessView.vue";
 import PreventionView from "../views/PreventionView.vue";
 
+const POST_LOGIN_PATH_KEY = "ss.postLoginPath";
+
+function savePostLoginPath(path) {
+  try {
+    window.sessionStorage.setItem(POST_LOGIN_PATH_KEY, path);
+  } catch {
+    // Ignore storage errors (private mode / blocked storage).
+  }
+}
+
+function consumePostLoginPath() {
+  try {
+    const savedPath = window.sessionStorage.getItem(POST_LOGIN_PATH_KEY);
+    window.sessionStorage.removeItem(POST_LOGIN_PATH_KEY);
+    return savedPath;
+  } catch {
+    return null;
+  }
+}
+
+function peekPostLoginPath() {
+  try {
+    return window.sessionStorage.getItem(POST_LOGIN_PATH_KEY);
+  } catch {
+    return null;
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -26,6 +54,24 @@ const router = createRouter({
 const hasOAuthCode = (to) => typeof to.query.code === "string" && typeof to.query.state === "string";
 const hasOAuthError = (to) => typeof to.query.error === "string";
 
+const sleep = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+async function hasAuthenticatedUser(maxRetries = 6, retryDelayMs = 220) {
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    try {
+      await getCurrentUser();
+      return true;
+    } catch {
+      if (attempt === maxRetries) {
+        return false;
+      }
+      await sleep(retryDelayMs);
+    }
+  }
+
+  return false;
+}
+
 router.beforeEach(async (to) => {
   if (!to.meta.requiresAuth) {
     return true;
@@ -46,16 +92,30 @@ router.beforeEach(async (to) => {
   }
 
   if (hasOAuthCode(to)) {
+    // Let Amplify's OAuth listener finish code exchange first.
     return true;
   }
 
-  try {
-    await getCurrentUser();
+  const authed = await hasAuthenticatedUser();
+
+  if (authed) {
+
+    const postLoginPath = peekPostLoginPath();
+    if (postLoginPath && to.path === "/" && postLoginPath !== to.fullPath) {
+      consumePostLoginPath();
+      return postLoginPath;
+    }
+
+    if (postLoginPath && postLoginPath === to.fullPath) {
+      consumePostLoginPath();
+    }
+
     return true;
-  } catch {
-    await signInWithRedirect({ customState: to.path });
-    return false;
   }
+
+  savePostLoginPath(to.fullPath);
+  await signInWithRedirect({ customState: to.path });
+  return false;
 });
 
 export default router;
