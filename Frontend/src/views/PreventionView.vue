@@ -12,7 +12,7 @@
 
     <section
       v-if="state.showLocationPrompt"
-      class="soft-card location-prompt-card reveal-card p-3 p-md-4 mb-4"
+      class="soft-card location-prompt-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 60ms"
       aria-label="Location setup"
     >
@@ -57,7 +57,7 @@
     </section>
 
     <section
-      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-4"
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 120ms"
       aria-label="Skin type selector"
     >
@@ -84,7 +84,7 @@
     </section>
 
     <section
-      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-4"
+      class="soft-card prevention-card advice-focus-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 180ms"
       aria-label="Personalized sun advice"
     >
@@ -96,10 +96,12 @@
           <p class="advice-summary mb-3">{{ personalisedAdvice.summary }}</p>
           <div class="advice-grid">
             <div class="advice-item">
+              <span class="advice-icon" aria-hidden="true" v-html="ADVICE_ICONS.spf"></span>
               <span class="advice-label">Recommended SPF</span>
               <span class="advice-value">{{ personalisedAdvice.spf }}</span>
             </div>
             <div class="advice-item">
+              <span class="advice-icon" aria-hidden="true" v-html="ADVICE_ICONS.exposure"></span>
               <span class="advice-label">Exposure guidance</span>
               <span class="advice-value">{{ personalisedAdvice.exposure }}</span>
             </div>
@@ -109,30 +111,22 @@
     </section>
 
     <section
-      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-4"
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 240ms"
       aria-label="Sunscreen guide"
     >
       <h2 class="section-heading mb-1">Sunscreen Guide</h2>
       <p class="card-subtitle mb-3">Recommended amount per body area</p>
 
-      <div class="table-responsive">
-        <table class="table sunscreen-table mb-0">
-          <thead>
-            <tr>
-              <th scope="col">Body area</th>
-              <th scope="col">Milliliters</th>
-              <th scope="col">Teaspoons</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in SUNSCREEN_GUIDE" :key="item.area">
-              <td>{{ item.area }}</td>
-              <td>{{ item.ml }} ml</td>
-              <td>{{ item.tsp }} tsp</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="sunscreen-visual-list" role="list" aria-label="Sunscreen amount by body area">
+        <article v-for="item in SUNSCREEN_GUIDE" :key="item.area" class="sunscreen-row" role="listitem">
+          <span class="sunscreen-row-icon" aria-hidden="true" v-html="BODY_AREA_ICONS[item.icon]"></span>
+          <div class="sunscreen-row-main">
+            <h3 class="sunscreen-row-area mb-0">{{ item.area }}</h3>
+            <p class="sunscreen-row-amount mb-0">{{ item.ml }} ml · {{ item.tsp }} tsp</p>
+          </div>
+          <span class="sunscreen-row-chip">{{ item.ml }} ml</span>
+        </article>
       </div>
 
       <div class="guide-footer mt-3">
@@ -142,7 +136,7 @@
     </section>
 
     <section
-      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-4"
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 270ms"
       aria-label="SunCare Timer"
     >
@@ -235,7 +229,7 @@
 
     <section
       class="soft-card prevention-card reveal-card p-3 p-md-4"
-      style="--reveal-delay: 300ms"
+      style="--reveal-delay: 330ms"
       aria-label="Protection gear recommendations"
     >
       <h2 class="section-heading mb-1">Protection Gear Recommendations</h2>
@@ -250,7 +244,7 @@
       </div>
     </section>
 
-    <section class="soft-card p-3 p-md-4 mt-4" aria-label="UV test panel">
+    <section class="soft-card p-3 p-md-4 mt-5" aria-label="UV test panel">
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
         <h2 class="test-heading mb-0">UV Test Panel</h2>
         <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearUvOverride">
@@ -415,11 +409,11 @@ const SKIN_TYPES = [
 ];
 
 const SUNSCREEN_GUIDE = [
-  { area: "Face & neck", ml: 5, tsp: 1 },
-  { area: "Each arm", ml: 5, tsp: 1 },
-  { area: "Chest & abdomen", ml: 7, tsp: 1.5 },
-  { area: "Back", ml: 7, tsp: 1.5 },
-  { area: "Each leg", ml: 6, tsp: 1.25 },
+  { area: "Face & neck", icon: "face", ml: 5, tsp: 1 },
+  { area: "Each arm", icon: "arm", ml: 5, tsp: 1 },
+  { area: "Chest & abdomen", icon: "torso", ml: 7, tsp: 1.5 },
+  { area: "Back", icon: "back", ml: 7, tsp: 1.5 },
+  { area: "Each leg", icon: "leg", ml: 6, tsp: 1.25 },
 ];
 
 const GEAR_ICONS = {
@@ -427,6 +421,19 @@ const GEAR_ICONS = {
   sunglasses: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 11H7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17 11H20.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M9 11H15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="4" y="9" width="6" height="5" rx="2.2" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="9" width="6" height="5" rx="2.2" stroke="currentColor" stroke-width="1.7"/></svg>`,
   clothing: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5.5L12 7.8L15 5.5L18.2 8V19H5.8V8L9 5.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.3 10.2L7.2 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M14.7 10.2L16.8 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
   shade: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5.5V14.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6.2 11.2C6.8 8.4 9.1 6.4 12 6.4C14.9 6.4 17.2 8.4 17.8 11.2H6.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 14.8V18.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 18.5H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+};
+
+const ADVICE_ICONS = {
+  spf: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.8L18.5 6.2V11.4C18.5 15.3 16 18.8 12 20.2C8 18.8 5.5 15.3 5.5 11.4V6.2L12 3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.6 11.9L11.2 13.6L14.6 10.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  exposure: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.1" stroke="currentColor" stroke-width="1.7"/><path d="M12 3.8V5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 18.4V20.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M20.2 12H18.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5.6 12H3.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.8 6.2L16.5 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7.5 16.5L6.2 17.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.8 17.8L16.5 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7.5 7.5L6.2 6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+};
+
+const BODY_AREA_ICONS = {
+  face: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="10" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 18.8C9.3 17.7 10.6 17 12 17C13.4 17 14.7 17.7 15.5 18.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  arm: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 8.5C8.5 7.4 9.4 6.5 10.5 6.5H11.2C12.3 6.5 13.2 7.4 13.2 8.5V10.3L16.6 13.7C17.2 14.3 17.2 15.2 16.6 15.8L15.8 16.6C15.2 17.2 14.3 17.2 13.7 16.6L10.4 13.3H8.6C7.5 13.3 6.6 12.4 6.6 11.3V10.5C6.6 9.4 7.5 8.5 8.6 8.5H8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`,
+  torso: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.4 5.2L12 7.3L14.6 5.2L17 7.2V18.8H7V7.2L9.4 5.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`,
+  back: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4 7.1C8.4 5.7 9.6 4.6 11 4.6H13C14.4 4.6 15.6 5.7 15.6 7.1V18.8H8.4V7.1Z" stroke="currentColor" stroke-width="1.7"/><path d="M9.7 10.2H14.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  leg: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.2 5.5H14L13.2 11.3L14.8 18.5H11.8L10.2 11.3V5.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`,
 };
 
 const { getLocation, FALLBACK_LOCATION } = useGeolocation();
@@ -502,29 +509,46 @@ const gearRecommendations = computed(() => {
 
 const recommendedIntervalMinutes = computed(() => {
   const uv = Number(state.currentUv || 0);
+
   if (uv < 3) {
     return null;
   }
+
+  // Practical UV-based buckets: moderate -> 3h, high -> 2h, very high/extreme -> 1h.
+  if (uv < 6) {
+    return 180;
+  }
+
   if (uv < 8) {
     return 120;
   }
-  if (uv < 11) {
-    return 90;
-  }
+
   return 60;
 });
+
+function formatInterval(minutes) {
+  const total = Math.max(0, Number(minutes || 0));
+  const hour = Math.floor(total / 60);
+  const minute = total % 60;
+
+  if (hour > 0 && minute > 0) {
+    return `${hour} ${hour === 1 ? "hour" : "hours"} ${minute} minutes`;
+  }
+
+  if (hour > 0) {
+    return `${hour} ${hour === 1 ? "hour" : "hours"}`;
+  }
+
+  return `${minute} minutes`;
+}
 
 const recommendationMessage = computed(() => {
   const recommended = recommendedIntervalMinutes.value;
   if (recommended === null) {
     return "Recommended reminder based on today's UV: Optional reminder";
   }
-  const hour = Math.floor(recommended / 60);
-  const minute = recommended % 60;
-  if (minute === 0) {
-    return `Recommended reminder based on today's UV: ${hour} ${hour === 1 ? "hour" : "hours"}`;
-  }
-  return `Recommended reminder based on today's UV: ${hour} hour ${minute} minutes`;
+
+  return `Recommended reminder based on today's UV: ${formatInterval(recommended)}`;
 });
 
 const timerRunning = computed(() => countdownSeconds.value > 0 && Boolean(reminderTicker));
@@ -844,6 +868,9 @@ onMounted(() => {
 <style scoped>
 .prevention-page {
   display: block;
+  --accent-sun: #f4b35f;
+  --accent-sky: #8cc8ff;
+  --accent-leaf: #92d6b8;
 }
 
 .test-heading {
@@ -867,6 +894,14 @@ onMounted(() => {
   border-radius: 28px;
   border: 1px solid rgba(19, 33, 59, 0.05);
   box-shadow: 0 16px 34px rgba(19, 33, 59, 0.08);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.prevention-card:hover,
+.location-prompt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(19, 33, 59, 0.11);
+  border-color: rgba(19, 33, 59, 0.08);
 }
 
 .card-subtitle,
@@ -942,18 +977,28 @@ onMounted(() => {
   align-items: flex-start;
   text-align: left;
   gap: 0.22rem;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .skin-card:hover {
-  border-color: rgba(19, 33, 59, 0.18);
-  box-shadow: 0 8px 20px rgba(19, 33, 59, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(242, 163, 79, 0.52);
+  box-shadow: 0 12px 24px rgba(19, 33, 59, 0.1);
 }
 
 .skin-card.active {
-  border-color: rgba(58, 91, 156, 0.5);
-  background: linear-gradient(180deg, rgba(245, 249, 255, 0.95), rgba(255, 255, 255, 0.98));
-  box-shadow: 0 10px 22px rgba(50, 84, 149, 0.12);
+  border-color: rgba(237, 153, 66, 0.86);
+  background: linear-gradient(180deg, rgba(255, 248, 238, 0.96), rgba(255, 255, 255, 0.98));
+  box-shadow: 0 12px 26px rgba(236, 153, 66, 0.22);
+}
+
+.advice-focus-card {
+  background:
+    radial-gradient(circle at top right, rgba(140, 200, 255, 0.2), transparent 46%),
+    radial-gradient(circle at bottom left, rgba(146, 214, 184, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(255, 255, 255, 0.99));
+  border-color: rgba(244, 179, 95, 0.24);
+  box-shadow: 0 18px 38px rgba(237, 168, 85, 0.18);
 }
 
 .skin-swatch {
@@ -983,10 +1028,11 @@ onMounted(() => {
 }
 
 .advice-panel {
-  border: 1px solid rgba(19, 33, 59, 0.08);
-  border-radius: 18px;
-  padding: 0.9rem;
-  background: rgba(249, 251, 255, 0.82);
+  border: 1px solid rgba(19, 33, 59, 0.07);
+  border-radius: 20px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(3px);
 }
 
 .advice-fade-enter-active,
@@ -1002,8 +1048,9 @@ onMounted(() => {
 
 .advice-summary {
   color: rgba(21, 34, 56, 0.9);
-  font-size: 0.98rem;
-  font-weight: 600;
+  font-size: 1.06rem;
+  line-height: 1.55;
+  font-weight: 700;
 }
 
 .advice-grid {
@@ -1014,9 +1061,32 @@ onMounted(() => {
 
 .advice-item {
   border-radius: 14px;
-  padding: 0.7rem 0.75rem;
+  padding: 0.78rem 0.8rem;
   background: #fff;
   border: 1px solid rgba(19, 33, 59, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.advice-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(19, 33, 59, 0.1);
+}
+
+.advice-icon {
+  display: inline-flex;
+  width: 27px;
+  height: 27px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  color: rgba(43, 76, 124, 0.88);
+  background: linear-gradient(180deg, rgba(235, 246, 255, 0.96), rgba(245, 251, 255, 0.98));
+  margin-bottom: 0.32rem;
+}
+
+.advice-icon :deep(svg) {
+  width: 15px;
+  height: 15px;
 }
 
 .advice-label {
@@ -1036,18 +1106,70 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.sunscreen-table th {
-  font-size: 0.82rem;
-  color: var(--ss-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-bottom-color: rgba(19, 33, 59, 0.1);
+.sunscreen-visual-list {
+  display: grid;
+  gap: 0.62rem;
 }
 
-.sunscreen-table td {
-  color: rgba(21, 34, 56, 0.88);
+.sunscreen-row {
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  border-radius: 16px;
+  padding: 0.62rem 0.72rem;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sunscreen-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(19, 33, 59, 0.09);
+}
+
+.sunscreen-row-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: rgba(31, 61, 103, 0.86);
+  background: linear-gradient(180deg, rgba(236, 247, 255, 0.95), rgba(246, 251, 255, 0.98));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.sunscreen-row-icon :deep(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.sunscreen-row-main {
+  min-width: 0;
+}
+
+.sunscreen-row-area {
+  color: rgba(21, 34, 56, 0.9);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.sunscreen-row-amount {
+  color: var(--ss-muted);
+  font-size: 0.84rem;
   font-weight: 600;
-  border-bottom-color: rgba(19, 33, 59, 0.06);
+}
+
+.sunscreen-row-chip {
+  margin-left: auto;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.24rem 0.54rem;
+  background: rgba(247, 251, 255, 0.96);
+  border: 1px solid rgba(19, 33, 59, 0.1);
+  color: rgba(21, 34, 56, 0.84);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .guide-footer {
@@ -1059,8 +1181,8 @@ onMounted(() => {
 .guide-chip {
   border-radius: 999px;
   padding: 0.35rem 0.72rem;
-  background: rgba(244, 248, 253, 0.95);
-  border: 1px solid rgba(19, 33, 59, 0.09);
+  background: linear-gradient(180deg, rgba(244, 250, 255, 0.95), rgba(248, 253, 250, 0.95));
+  border: 1px solid rgba(140, 200, 255, 0.25);
   color: rgba(21, 34, 56, 0.82);
   font-size: 0.82rem;
   font-weight: 700;
@@ -1077,6 +1199,12 @@ onMounted(() => {
   border-radius: 18px;
   padding: 0.8rem;
   background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gear-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(19, 33, 59, 0.1);
 }
 
 .gear-icon {
@@ -1152,7 +1280,7 @@ onMounted(() => {
 
 .preset-timer-pill {
   border: 1px solid rgba(19, 33, 59, 0.14);
-  background: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 252, 255, 0.96));
   color: rgba(21, 34, 56, 0.9);
   border-radius: 999px;
   min-height: 40px;
@@ -1171,9 +1299,9 @@ onMounted(() => {
 }
 
 .preset-timer-pill.active {
-  border-color: rgba(43, 74, 124, 0.45);
-  background: rgba(244, 248, 255, 0.95);
-  box-shadow: 0 10px 20px rgba(44, 75, 125, 0.12);
+  border-color: rgba(140, 200, 255, 0.6);
+  background: linear-gradient(180deg, rgba(234, 246, 255, 0.95), rgba(244, 251, 255, 0.97));
+  box-shadow: 0 10px 20px rgba(67, 131, 193, 0.14);
 }
 
 .timer-wheel-wrap {
@@ -1243,14 +1371,14 @@ onMounted(() => {
 
 .start-reminder-btn,
 .timer-modal-btn {
-  background: linear-gradient(180deg, rgba(37, 65, 111, 0.95), rgba(26, 48, 84, 0.98));
+  background: linear-gradient(135deg, rgba(244, 179, 95, 0.96), rgba(131, 196, 255, 0.94));
   color: #fff;
-  box-shadow: 0 10px 18px rgba(19, 33, 59, 0.2);
+  box-shadow: 0 10px 18px rgba(90, 142, 194, 0.24);
 }
 
 .start-reminder-btn:hover,
 .timer-modal-btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.01);
 }
 
 .stop-reminder-btn {
@@ -1338,6 +1466,14 @@ onMounted(() => {
   .prevention-card,
   .location-prompt-card {
     border-radius: 24px;
+  }
+
+  .sunscreen-row {
+    align-items: flex-start;
+  }
+
+  .sunscreen-row-chip {
+    margin-left: 0;
   }
 
   .timer-wheel-wrap {
