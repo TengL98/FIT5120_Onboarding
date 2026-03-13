@@ -291,7 +291,7 @@ const uvTheme = computed(() => {
   z-index: 2;
   margin: 0 auto;
   max-width: 640px;
-  padding: 1.1rem 1rem 1rem;
+  padding: 1rem 1rem 0.92rem;
   border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.24);
@@ -300,22 +300,23 @@ const uvTheme = computed(() => {
 }
 
 .hero-title {
-  font-weight: 700;
+  font-weight: 650;
   font-size: clamp(1.5rem, 4.8vw, 2.1rem);
-  margin-bottom: 0.5rem;
-  color: #0f172a;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.42rem;
+  color: rgba(15, 23, 42, 0.9);
 }
 
 .hero-location {
-  color: rgba(30, 41, 59, 0.82);
-  font-weight: 600;
-  margin-bottom: 0.7rem;
+  color: rgba(30, 41, 59, 0.7);
+  font-weight: 560;
+  margin-bottom: 0.62rem;
 }
 
 .hero-search-wrap {
   position: relative;
   width: min(470px, 100%);
-  margin: 0 auto 0.7rem;
+  margin: 0 auto 0.58rem;
   text-align: left;
 }
 
@@ -348,9 +349,9 @@ const uvTheme = computed(() => {
   border: 0;
   outline: 0;
   background: transparent;
-  color: #0f172a;
+  color: rgba(15, 23, 42, 0.88);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 460;
   padding: 0.12rem 0;
 }
 
@@ -388,7 +389,7 @@ const uvTheme = computed(() => {
 }
 
 .hero-search-meta {
-  margin-top: 0.48rem;
+  margin-top: 0.42rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -399,26 +400,26 @@ const uvTheme = computed(() => {
   border: 0;
   background: transparent;
   padding: 0;
-  color: rgba(15, 23, 42, 0.74);
+  color: rgba(15, 23, 42, 0.62);
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 560;
   letter-spacing: 0.01em;
 }
 
 .hero-location-action:hover {
-  color: rgba(15, 23, 42, 0.95);
+  color: rgba(15, 23, 42, 0.84);
 }
 
 .hero-location-source {
   font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(30, 41, 59, 0.58);
+  font-weight: 520;
+  color: rgba(30, 41, 59, 0.52);
 }
 
 .hero-search-status {
-  margin-top: 0.18rem;
+  margin-top: 0.16rem;
   font-size: 0.79rem;
-  color: rgba(30, 41, 59, 0.72);
+  color: rgba(30, 41, 59, 0.62);
   min-height: 1rem;
 }
 
@@ -431,33 +432,34 @@ const uvTheme = computed(() => {
 
 .hero-value {
   font-size: clamp(4.4rem, 12vw, 7.4rem);
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.28rem;
-  color: #0f172a;
+  line-height: 0.96;
+  font-weight: 760;
+  letter-spacing: -0.024em;
+  margin-bottom: 0.22rem;
+  color: rgba(15, 23, 42, 0.9);
 }
 
 .hero-loading {
   width: min(260px, 55vw);
   height: 88px;
   border-radius: 18px;
-  margin-bottom: 0.28rem;
+  margin-bottom: 0.22rem;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.5) 25%, rgba(255, 255, 255, 0.82) 50%, rgba(255, 255, 255, 0.5) 75%);
   background-size: 200% 100%;
   animation: pulse 1.5s infinite;
 }
 
 .hero-category {
-  font-size: 1.22rem;
-  font-weight: 800;
-  margin-bottom: 0.3rem;
+  font-size: 1.16rem;
+  font-weight: 700;
+  margin-bottom: 0.24rem;
 }
 
 .hero-message {
-  color: rgba(30, 41, 59, 0.76);
-  font-size: 1rem;
-  font-weight: 500;
+  color: rgba(30, 41, 59, 0.64);
+  font-size: 0.96rem;
+  font-weight: 470;
+  line-height: 1.35;
 }
 
 @keyframes floatGlow {
@@ -500,11 +502,11 @@ const uvTheme = computed(() => {
 
   .hero-panel {
     border-radius: 20px;
-    padding: 0.95rem 0.85rem 0.85rem;
+    padding: 0.88rem 0.82rem 0.78rem;
   }
 
   .hero-search-wrap {
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.48rem;
   }
 
   .hero-search-field {
