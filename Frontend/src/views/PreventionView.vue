@@ -962,6 +962,8 @@ watch(
   font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 0.01em;
+  min-height: 2.5rem;
+  padding: 0.2rem 0.25rem;
 }
 
 .location-action:hover {
@@ -998,6 +1000,7 @@ watch(
   border: 0;
   background: transparent;
   padding: 0.58rem 0.78rem;
+  min-height: 44px;
   color: var(--ss-text);
   font-size: 0.94rem;
 }
@@ -1328,7 +1331,7 @@ watch(
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 252, 255, 0.96));
   color: rgba(21, 34, 56, 0.9);
   border-radius: 999px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0.42rem 0.78rem;
   display: inline-flex;
   align-items: center;
@@ -1388,6 +1391,7 @@ watch(
   font-size: 0.9rem;
   font-weight: 700;
   padding: 0.48rem 0.55rem;
+  min-height: 44px;
   text-align: center;
   scroll-snap-align: center;
   transition: all 0.18s ease;
@@ -1408,7 +1412,7 @@ watch(
 .timer-modal-btn {
   border-radius: 999px;
   border: 0;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0.42rem 1.15rem;
   font-size: 0.88rem;
   font-weight: 700;

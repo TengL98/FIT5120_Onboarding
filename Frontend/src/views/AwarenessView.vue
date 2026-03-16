@@ -815,6 +815,7 @@ onBeforeUnmount(() => {
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: 0.35rem;
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(247, 250, 255, 0.7), rgba(255, 255, 255, 0.45));
@@ -824,6 +825,13 @@ onBeforeUnmount(() => {
 .chart-canvas {
   min-width: 1000px;
   height: 392px;
+}
+
+@media (max-width: 991px) {
+  .chart-canvas {
+    min-width: 820px;
+    height: 360px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -845,7 +853,15 @@ onBeforeUnmount(() => {
   }
 
   .chart-canvas {
+    min-width: 680px;
     height: 340px;
+  }
+}
+
+@media (max-width: 575px) {
+  .chart-canvas {
+    min-width: 560px;
+    height: 300px;
   }
 }
 

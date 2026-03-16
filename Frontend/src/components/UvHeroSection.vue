@@ -329,6 +329,7 @@ const uvTheme = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  min-height: 44px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.52);
   background: rgba(255, 255, 255, 0.36);
@@ -404,7 +405,8 @@ const uvTheme = computed(() => {
 .hero-location-action {
   border: 0;
   background: transparent;
-  padding: 0;
+  padding: 0.25rem 0;
+  min-height: 44px;
   color: rgba(15, 23, 42, 0.62);
   font-size: 0.82rem;
   font-weight: 560;
@@ -522,6 +524,7 @@ const uvTheme = computed(() => {
   }
 
   .hero-search-field {
+    min-height: 44px;
     padding: 0.4rem 0.75rem;
   }
 }

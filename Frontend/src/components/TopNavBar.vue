@@ -6,16 +6,18 @@
         <span class="brand-text">SunSense</span>
       </RouterLink>
 
-      <nav aria-label="Main navigation" class="d-flex align-items-center gap-2">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.path"
-          :to="item.path"
-          class="nav-pill text-decoration-none"
-          :class="{ active: isActive(item.path) }"
-        >
-          {{ item.label }}
-        </RouterLink>
+      <nav aria-label="Main navigation" class="top-nav-menu d-flex align-items-center gap-2">
+        <div class="top-nav-links">
+          <RouterLink
+            v-for="item in navItems"
+            :key="item.path"
+            :to="item.path"
+            class="nav-pill text-decoration-none"
+            :class="{ active: isActive(item.path) }"
+          >
+            {{ item.label }}
+          </RouterLink>
+        </div>
         <button type="button" class="logout-btn" @click="handleSignOut">Sign out</button>
       </nav>
     </div>
@@ -68,13 +70,18 @@ const handleSignOut = async () => {
 }
 
 .nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--ss-muted);
   font-weight: 600;
   font-size: 0.95rem;
   padding: 0.45rem 1rem;
+  min-height: 2.5rem;
   border-radius: 999px;
   transition: all 0.22s ease;
   outline-offset: 3px;
+  white-space: nowrap;
 }
 
 .nav-pill:hover,
@@ -89,6 +96,9 @@ const handleSignOut = async () => {
 }
 
 .logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #d2dae6;
   background: #fff;
   color: #172034;
@@ -96,7 +106,9 @@ const handleSignOut = async () => {
   font-weight: 700;
   border-radius: 999px;
   padding: 0.4rem 0.9rem;
+  min-height: 2.5rem;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .logout-btn:hover,
@@ -117,9 +129,33 @@ const handleSignOut = async () => {
     width: 100%;
   }
 
-  nav {
+  .top-nav-menu {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .top-nav-links {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    flex: 1 1 auto;
+  }
+
+  .top-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-pill,
+  .logout-btn {
+    min-height: 44px;
+  }
+
+  .nav-pill {
+    padding: 0.45rem 0.8rem;
   }
 }
 </style>
