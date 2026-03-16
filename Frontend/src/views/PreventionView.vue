@@ -111,6 +111,7 @@
     </section>
 
     <section
+      id="sunscreen-guide"
       class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 240ms"
       aria-label="Sunscreen guide"
@@ -136,6 +137,7 @@
     </section>
 
     <section
+      id="suncare-timer"
       class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 270ms"
       aria-label="SunCare Timer"
@@ -228,6 +230,7 @@
     </section>
 
     <section
+      id="protection-gear"
       class="soft-card prevention-card reveal-card p-3 p-md-4"
       style="--reveal-delay: 330ms"
       aria-label="Protection gear recommendations"
@@ -303,7 +306,8 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import UvHeroSection from "../components/UvHeroSection.vue";
 import { useGeolocation } from "../composables/useGeolocation";
 import { useLocationSearch } from "../composables/useLocationSearch";
@@ -311,6 +315,16 @@ import { getUvCategory, getUvColor, getUvShortMessage } from "../composables/use
 import { useUvData } from "../composables/useUvData";
 
 const SAVED_LOCATION_KEY = "ss.selectedLocation";
+const route = useRoute();
+
+const FOCUS_TO_SECTION = {
+  sunscreen: "sunscreen-guide",
+  "sunscreen-guide": "sunscreen-guide",
+  clothing: "protection-gear",
+  "protection-gear": "protection-gear",
+  reminder: "suncare-timer",
+  "suncare-timer": "suncare-timer",
+};
 
 const state = reactive({
   loading: true,
@@ -853,6 +867,29 @@ async function loadPreventionData() {
   await applyLocationAndLoadUv(FALLBACK_LOCATION);
 }
 
+function resolveSectionId(hashValue, focusValue) {
+  const cleanHash = String(hashValue || "").replace(/^#/, "").trim().toLowerCase();
+  const cleanFocus = String(focusValue || "").trim().toLowerCase();
+
+  return FOCUS_TO_SECTION[cleanHash] || FOCUS_TO_SECTION[cleanFocus] || "";
+}
+
+async function scrollToFocusedSection(hashValue, focusValue) {
+  const sectionId = resolveSectionId(hashValue, focusValue);
+  if (!sectionId) {
+    return;
+  }
+
+  await nextTick();
+
+  const target = document.getElementById(sectionId);
+  if (!target) {
+    return;
+  }
+
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 onBeforeUnmount(() => {
   if (searchTimer) {
     clearTimeout(searchTimer);
@@ -862,7 +899,15 @@ onBeforeUnmount(() => {
 
 onMounted(() => {
   loadPreventionData();
+  scrollToFocusedSection(route.hash, route.query.focus);
 });
+
+watch(
+  () => [route.hash, route.query.focus],
+  ([hash, focus]) => {
+    scrollToFocusedSection(hash, focus);
+  },
+);
 </script>
 
 <style scoped>

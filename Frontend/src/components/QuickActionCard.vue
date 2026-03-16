@@ -1,11 +1,13 @@
 <template>
-  <button class="action-card text-start" type="button">
+  <button class="action-card text-start" type="button" @click="$emit('click')">
     <p class="action-title mb-2">{{ title }}</p>
     <p class="action-text mb-0">{{ text }}</p>
   </button>
 </template>
 
 <script setup>
+defineEmits(["click"]);
+
 defineProps({
   title: {
     type: String,
