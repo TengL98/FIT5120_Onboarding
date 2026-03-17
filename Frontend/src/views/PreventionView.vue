@@ -8,6 +8,17 @@
       :uv-color="state.uvColor"
       :peak-window-text="state.peakWindowText"
       :loading="state.loading"
+      :search-query="searchQuery"
+      :search-suggestions="searchSuggestions"
+      :show-suggestions="showSuggestions"
+      :search-loading="searchLoading"
+      :search-error="searchError"
+      :location-mode="state.locationMode"
+      @update:search-query="onSearchQueryUpdate"
+      @open-suggestions="openSuggestions"
+      @close-suggestions="closeSuggestions"
+      @use-current-location="useLiveLocation"
+      @select-location="selectManualLocation"
     />
 
     <section
@@ -57,12 +68,57 @@
     </section>
 
     <section
-      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
+      class="soft-card prevention-card guidance-card reveal-card p-3 p-md-4 mb-5"
+      style="--reveal-delay: 100ms"
+      aria-label="Personalised guidance steps"
+    >
+      <h2 class="section-heading mb-1">Get Personalised Protection in 3 Steps</h2>
+      <p class="card-subtitle mb-3">We tailor prevention advice to your skin type and today's UV.</p>
+
+      <div class="guidance-steps" role="list" aria-label="Personalised guidance steps">
+        <article class="guidance-step" role="listitem">
+          <span class="step-pill">Step 1</span>
+          <p class="step-text mb-0">Learn what Fitzpatrick skin type means and find your closest match.</p>
+        </article>
+        <article class="guidance-step" role="listitem">
+          <span class="step-pill">Step 2</span>
+          <p class="step-text mb-0">Choose your skin type based on how your skin usually burns or tans.</p>
+        </article>
+        <article class="guidance-step" role="listitem">
+          <span class="step-pill">Step 3</span>
+          <p class="step-text mb-0">Unlock personalised sunscreen, gear, and exposure recommendations.</p>
+        </article>
+      </div>
+    </section>
+
+    <section
+      class="soft-card prevention-card fitzpatrick-info-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 120ms"
+      aria-label="Fitzpatrick skin type explanation"
+    >
+      <h2 class="section-heading mb-1">What Is Fitzpatrick Skin Type?</h2>
+      <p class="card-subtitle mb-2">A simple scale (Type I to Type VI) showing how skin usually reacts to UV exposure.</p>
+      <p class="fitzpatrick-intro mb-3">
+        This helps us tailor advice because some skin types burn faster, while others tan more easily. Everyone still needs daily sun protection.
+      </p>
+
+      <div class="fitzpatrick-scale-grid" role="list" aria-label="Fitzpatrick scale from type one to type six">
+        <article v-for="type in SKIN_TYPES" :key="`scale-${type.id}`" class="fitzpatrick-scale-item" role="listitem">
+          <span class="fitzpatrick-scale-swatch" :style="{ background: type.tone }" aria-hidden="true"></span>
+          <span class="fitzpatrick-scale-title">{{ type.label }}</span>
+          <span class="fitzpatrick-scale-primary">{{ type.primaryText }}</span>
+          <span class="fitzpatrick-scale-secondary">{{ type.secondaryText }}</span>
+        </article>
+      </div>
+    </section>
+
+    <section
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
+      style="--reveal-delay: 150ms"
       aria-label="Skin type selector"
     >
       <h2 class="section-heading mb-1">Select Your Skin Type</h2>
-      <p class="card-subtitle mb-3">Fitzpatrick skin type scale</p>
+      <p class="card-subtitle mb-3">Step 2: Choose one option to generate personalised protection advice.</p>
 
       <div class="skin-grid">
         <button
@@ -80,10 +136,14 @@
         </button>
       </div>
 
-      <p class="small text-secondary mt-3 mb-0 fw-semibold">All skin types require UV protection.</p>
+      <p v-if="!hasSkinTypeSelection" class="selection-prompt mt-3 mb-0">
+        Choose your skin type to unlock personalised recommendations.
+      </p>
+      <p v-else class="small text-secondary mt-3 mb-0 fw-semibold">All skin types require UV protection.</p>
     </section>
 
     <section
+      v-if="hasSkinTypeSelection"
       class="soft-card prevention-card advice-focus-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 180ms"
       aria-label="Personalized sun advice"
@@ -111,6 +171,7 @@
     </section>
 
     <section
+      v-if="hasSkinTypeSelection"
       id="sunscreen-guide"
       class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
       style="--reveal-delay: 240ms"
@@ -137,9 +198,28 @@
     </section>
 
     <section
+      v-if="hasSkinTypeSelection"
+      id="protection-gear"
+      class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
+      style="--reveal-delay: 330ms"
+      aria-label="Protection gear recommendations"
+    >
+      <h2 class="section-heading mb-1">Protection Gear Recommendations</h2>
+      <p class="card-subtitle mb-3">Adapted to your UV risk and skin sensitivity</p>
+
+      <div class="gear-grid">
+        <article v-for="item in gearRecommendations" :key="item.title" class="gear-item">
+          <span class="gear-icon" aria-hidden="true" v-html="item.iconSvg"></span>
+          <h3 class="gear-title mb-1">{{ item.title }}</h3>
+          <p class="gear-desc mb-0">{{ item.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section
       id="suncare-timer"
       class="soft-card prevention-card reveal-card p-3 p-md-4 mb-5"
-      style="--reveal-delay: 270ms"
+      :style="{ '--reveal-delay': hasSkinTypeSelection ? '360ms' : '210ms' }"
       aria-label="SunCare Timer"
     >
       <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
@@ -226,24 +306,6 @@
         <p class="countdown-label mb-1">Next sunscreen reminder</p>
         <p class="countdown-value mb-1">{{ formattedCountdown }}</p>
         <p class="countdown-helper mb-0">Reapply sunscreen to maintain protection.</p>
-      </div>
-    </section>
-
-    <section
-      id="protection-gear"
-      class="soft-card prevention-card reveal-card p-3 p-md-4"
-      style="--reveal-delay: 330ms"
-      aria-label="Protection gear recommendations"
-    >
-      <h2 class="section-heading mb-1">Protection Gear Recommendations</h2>
-      <p class="card-subtitle mb-3">Adapted to your UV risk and skin sensitivity</p>
-
-      <div class="gear-grid">
-        <article v-for="item in gearRecommendations" :key="item.title" class="gear-item">
-          <span class="gear-icon" aria-hidden="true" v-html="item.iconSvg"></span>
-          <h3 class="gear-title mb-1">{{ item.title }}</h3>
-          <p class="gear-desc mb-0">{{ item.description }}</p>
-        </article>
       </div>
     </section>
 
@@ -341,6 +403,7 @@ const state = reactive({
   liveCurrentUv: null,
   uvOverride: null,
   debugNote: "",
+  locationMode: "live",
 });
 
 const searchQuery = ref("");
@@ -349,7 +412,7 @@ const showSuggestions = ref(false);
 const searchLoading = ref(false);
 const searchError = ref("");
 const skipNextSearch = ref(false);
-const selectedSkinTypeId = ref(1);
+const selectedSkinTypeId = ref(null);
 const presetUvValues = [1, 4, 7, 9, 12];
 const customUvInput = ref(6);
 const PRESET_TIMERS = [
@@ -454,9 +517,9 @@ const { getLocation, FALLBACK_LOCATION } = useGeolocation();
 const { getUvData } = useUvData();
 const { searchLocations } = useLocationSearch();
 
-const selectedSkinType = computed(
-  () => SKIN_TYPES.find((item) => item.id === selectedSkinTypeId.value) || SKIN_TYPES[0],
-);
+const hasSkinTypeSelection = computed(() => Number.isFinite(selectedSkinTypeId.value));
+
+const selectedSkinType = computed(() => SKIN_TYPES.find((item) => item.id === selectedSkinTypeId.value) || SKIN_TYPES[0]);
 
 const adviceTransitionKey = computed(
   () => `${selectedSkinTypeId.value}-${state.uvCategory}-${Math.round(Number(state.currentUv || 0))}`,
@@ -783,7 +846,12 @@ async function selectManualLocation(location) {
   showSuggestions.value = false;
   searchError.value = "";
   state.showLocationPrompt = false;
+  state.locationMode = "manual";
   await applyLocationAndLoadUv(location);
+}
+
+function onSearchQueryUpdate(value) {
+  searchQuery.value = value;
 }
 
 function openSuggestions() {
@@ -835,7 +903,7 @@ watch(searchQuery, (value) => {
       showSuggestions.value = results.length > 0;
 
       if (!results.length) {
-        searchError.value = "No suburb found. Try another keyword.";
+        searchError.value = "No Australian suburb found. Please search within Australia.";
       }
     } catch (error) {
       if (token !== searchToken) {
@@ -955,6 +1023,47 @@ watch(
   font-size: 0.94rem;
 }
 
+.guidance-card {
+  background:
+    radial-gradient(circle at top left, rgba(146, 214, 184, 0.16), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(140, 200, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 252, 247, 0.97), rgba(255, 255, 255, 0.99));
+}
+
+.guidance-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.guidance-step {
+  border-radius: 16px;
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.72rem;
+}
+
+.step-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 33, 59, 0.12);
+  background: rgba(247, 251, 255, 0.95);
+  color: rgba(21, 34, 56, 0.84);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.46rem;
+  margin-bottom: 0.35rem;
+}
+
+.step-text {
+  color: rgba(21, 34, 56, 0.88);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
 .location-action {
   border: 0;
   background: transparent;
@@ -1015,6 +1124,66 @@ watch(
   gap: 0.85rem;
 }
 
+.fitzpatrick-info-card {
+  background:
+    linear-gradient(180deg, rgba(247, 250, 255, 0.97), rgba(255, 255, 255, 0.99));
+}
+
+.fitzpatrick-intro {
+  color: rgba(21, 34, 56, 0.86);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.fitzpatrick-scale-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.fitzpatrick-scale-item {
+  border-radius: 16px;
+  border: 1px solid rgba(19, 33, 59, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 0.55rem 0.42rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fitzpatrick-scale-swatch {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  box-shadow: 0 4px 10px rgba(19, 33, 59, 0.13);
+}
+
+.fitzpatrick-scale-title {
+  color: var(--ss-text);
+  font-size: 0.84rem;
+  font-weight: 800;
+  margin-top: 0.1rem;
+}
+
+.fitzpatrick-scale-primary {
+  color: rgba(21, 34, 56, 0.86);
+  text-align: center;
+  font-size: 0.77rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.fitzpatrick-scale-secondary {
+  color: var(--ss-muted);
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.26;
+  font-weight: 600;
+}
+
 .skin-card {
   border: 1px solid rgba(19, 33, 59, 0.08);
   border-radius: 18px;
@@ -1073,6 +1242,16 @@ watch(
 .skin-type-meta {
   font-size: 0.8rem;
   color: var(--ss-muted);
+}
+
+.selection-prompt {
+  border-radius: 12px;
+  border: 1px solid rgba(244, 179, 95, 0.3);
+  background: rgba(255, 247, 234, 0.9);
+  color: rgba(120, 80, 28, 0.95);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.55rem 0.7rem;
 }
 
 .advice-panel {
@@ -1506,6 +1685,14 @@ watch(
 }
 
 @media (max-width: 991px) {
+  .guidance-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fitzpatrick-scale-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .skin-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1536,6 +1723,14 @@ watch(
 }
 
 @media (max-width: 520px) {
+  .guidance-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fitzpatrick-scale-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .skin-grid {
     grid-template-columns: minmax(0, 1fr);
   }

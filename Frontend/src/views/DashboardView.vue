@@ -349,7 +349,7 @@ watch(searchQuery, (value) => {
       searchSuggestions.value = results;
       showSuggestions.value = results.length > 0;
       if (!results.length) {
-        searchError.value = "No suburb found. Try another keyword.";
+        searchError.value = "No Australian suburb found. Please search within Australia.";
       }
     } catch (error) {
       if (token !== searchToken) {
