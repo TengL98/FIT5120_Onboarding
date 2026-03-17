@@ -3,7 +3,7 @@
     <div v-if="loading" class="summary-loading"></div>
 
     <template v-else>
-      <div class="row g-4 align-items-start mb-4">
+      <div class="row g-4 align-items-center mb-4">
         <div class="col-12 col-lg-7">
           <p class="eyebrow mb-2">TODAY'S UV · {{ locationName }}</p>
 
@@ -31,10 +31,6 @@
             <div>
               <p class="meta-label mb-1">Peak Window</p>
               <p class="meta-value">{{ peakWindowText }}</p>
-            </div>
-            <div>
-              <p class="meta-label mb-1">Safer Window</p>
-              <p class="meta-value">{{ safeWindowText }}</p>
             </div>
           </div>
         </div>
@@ -117,7 +113,7 @@ defineProps({
 
 .meta-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 

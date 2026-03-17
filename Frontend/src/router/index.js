@@ -35,6 +35,7 @@ function peekPostLoginPath() {
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior: () => ({ top: 0, behavior: "smooth" }),
   routes: [
     { path: "/", name: "home", component: HomeView, meta: { requiresAuth: true } },
     {

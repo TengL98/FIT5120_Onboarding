@@ -33,7 +33,15 @@
       :loading="state.loading"
     />
 
-    <UvTrendCard :times="state.hourlyTimes" :values="state.hourlyUv" :loading="state.loading" />
+    <UvTrendCard
+      :times="state.hourlyTimes"
+      :values="state.hourlyUv"
+      :peak-start="state.peakWindowStart"
+      :peak-end="state.peakWindowEnd"
+      :safe-morning-end="state.safeWindowMorningEnd"
+      :safe-afternoon-start="state.safeWindowAfternoonStart"
+      :loading="state.loading"
+    />
 
     <QuickActionGrid />
     <FooterTip />
@@ -119,6 +127,10 @@ const state = reactive({
   todayDate: "",
   peakWindowText: "",
   safeWindowText: "",
+  peakWindowStart: null,
+  peakWindowEnd: null,
+  safeWindowMorningEnd: null,
+  safeWindowAfternoonStart: null,
   hourlyTimes: [],
   hourlyUv: [],
   debugNote: "",
@@ -254,6 +266,10 @@ async function applyLocationAndLoadUv(location, mode) {
   state.todayDate = uvData.todayDate || "";
   state.peakWindowText = uvData.peakWindowText || "No data";
   state.safeWindowText = uvData.safeWindowText || "No data";
+  state.peakWindowStart = uvData.peakWindowStart || null;
+  state.peakWindowEnd = uvData.peakWindowEnd || null;
+  state.safeWindowMorningEnd = uvData.safeWindowMorningEnd || null;
+  state.safeWindowAfternoonStart = uvData.safeWindowAfternoonStart || null;
   state.hourlyTimes = uvData.hourlyTimes || [];
   state.hourlyUv = uvData.hourlyUv || [];
 

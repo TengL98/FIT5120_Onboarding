@@ -41,6 +41,10 @@ function getFallbackData() {
     currentUv: 6,
     peakWindowText: "11:00 - 14:00",
     safeWindowText: "Before 09:00",
+    peakWindowStart: "11:00",
+    peakWindowEnd: "14:00",
+    safeWindowMorningEnd: "09:00",
+    safeWindowAfternoonStart: "17:00",
     weekday: now.toLocaleDateString([], { weekday: "long" }),
     todayDate: now.toLocaleDateString([], {
       month: "long",
@@ -85,22 +89,33 @@ function derivePeakWindow(times, values) {
     .map((item) => item.index);
 
   if (!indices.length) {
-    return "No significant UV peak";
+    return { text: "No significant UV peak", start: null, end: null };
   }
 
   const start = times[indices[0]];
   const end = times[indices[indices.length - 1]];
-  return `${start} - ${end}`;
+  return { text: `${start} - ${end}`, start, end };
 }
 
 function deriveSafeWindow(times, values) {
   const firstModerateIndex = values.findIndex((value) => value >= 3);
 
   if (firstModerateIndex <= 0) {
-    return "Use protection throughout the day";
+    return { text: "Use protection throughout the day", morningEnd: null, afternoonStart: null };
   }
 
-  return `Before ${times[firstModerateIndex]}`;
+  const morningEnd = times[firstModerateIndex];
+
+  // Find afternoon safe start: last index where UV >= 3, then one step after
+  let lastDangerIndex = -1;
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (values[i] >= 3) { lastDangerIndex = i; break; }
+  }
+  const afternoonStart = (lastDangerIndex >= 0 && lastDangerIndex + 1 < times.length)
+    ? times[lastDangerIndex + 1]
+    : null;
+
+  return { text: `Before ${morningEnd}`, morningEnd, afternoonStart };
 }
 
 export function useUvData() {
@@ -140,12 +155,19 @@ export function useUvData() {
 
       const hourlyTimes = chartSource.map((item) => toHourLabel(item.time));
       const hourlyUv = chartSource.map((item) => item.uv);
+
+      const peak = derivePeakWindow(hourlyTimes, hourlyUv);
+      const safe = deriveSafeWindow(hourlyTimes, hourlyUv);
       const now = new Date();
 
       return {
         currentUv: findCurrentUvFromSeries(merged),
-        peakWindowText: derivePeakWindow(hourlyTimes, hourlyUv),
-        safeWindowText: deriveSafeWindow(hourlyTimes, hourlyUv),
+        peakWindowText: peak.text,
+        safeWindowText: safe.text,
+        peakWindowStart: peak.start,
+        peakWindowEnd: peak.end,
+        safeWindowMorningEnd: safe.morningEnd,
+        safeWindowAfternoonStart: safe.afternoonStart,
         weekday: now.toLocaleDateString([], { weekday: "long" }),
         todayDate: now.toLocaleDateString([], {
           month: "long",

@@ -15,6 +15,22 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  peakStart: {
+    type: String,
+    default: null,
+  },
+  peakEnd: {
+    type: String,
+    default: null,
+  },
+  safeMorningEnd: {
+    type: String,
+    default: null,
+  },
+  safeAfternoonStart: {
+    type: String,
+    default: null,
+  },
 });
 
 const chartRef = ref(null);
@@ -29,6 +45,34 @@ const renderChart = () => {
     chartInstance = echarts.init(chartRef.value);
   }
 
+  // Peak zone: soft warm amber matching the chart's orange line palette
+  const markAreaData = [];
+
+  if (props.peakStart && props.peakEnd) {
+    markAreaData.push([
+      {
+        xAxis: props.peakStart,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(240, 140, 0, 0.18)" },
+            { offset: 1, color: "rgba(240, 140, 0, 0.04)" },
+          ]),
+        },
+        label: {
+          show: true,
+          formatter: "▲ Peak UV",
+          position: "insideTopLeft",
+          color: "#b86e00",
+          fontSize: 10,
+          fontWeight: 700,
+          fontFamily: "Manrope, sans-serif",
+          padding: [3, 6],
+        },
+      },
+      { xAxis: props.peakEnd },
+    ]);
+  }
+
   chartInstance.setOption({
     animationDuration: 650,
     tooltip: {
@@ -38,14 +82,14 @@ const renderChart = () => {
       textStyle: { color: "#fff", fontFamily: "Manrope" },
       formatter: (params) => {
         const point = params[0];
-        return `${point.axisValue}<br/>UV ${Math.round(Number(point.data))}`;
+        return `${point.axisValue}<br/>UV Index: ${Math.round(Number(point.data))}`;
       },
     },
     grid: {
       left: 18,
-      right: 14,
-      top: 20,
-      bottom: 20,
+      right: 24,
+      top: 12,
+      bottom: 28,
       containLabel: true,
     },
     xAxis: {
@@ -56,8 +100,13 @@ const renderChart = () => {
       axisLabel: {
         color: "#7b8696",
         fontSize: 11,
+        interval: 1,
       },
       axisTick: { show: false },
+      name: "Time of Day",
+      nameLocation: "middle",
+      nameGap: 24,
+      nameTextStyle: { color: "#9aa3b0", fontSize: 11, fontWeight: 600 },
     },
     yAxis: {
       type: "value",
@@ -75,6 +124,9 @@ const renderChart = () => {
       },
       axisLine: { show: false },
       axisTick: { show: false },
+      name: "UV Index",
+      nameLocation: "end",
+      nameTextStyle: { color: "#9aa3b0", fontSize: 11, fontWeight: 600, padding: [0, 0, 4, 0] },
     },
     series: [
       {
@@ -102,6 +154,13 @@ const renderChart = () => {
             { offset: 1, color: "rgba(255, 255, 255, 0.03)" },
           ]),
         },
+        markArea: markAreaData.length
+          ? {
+              silent: true,
+              emphasis: { disabled: true },
+              data: markAreaData,
+            }
+          : undefined,
       },
     ],
   });
@@ -117,7 +176,7 @@ onMounted(() => {
 });
 
 watch(
-  () => [props.times, props.values],
+  () => [props.times, props.values, props.peakStart, props.peakEnd, props.safeMorningEnd, props.safeAfternoonStart],
   () => {
     renderChart();
   },
@@ -133,12 +192,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .trend-chart {
   width: 100%;
-  height: 320px;
+  height: 340px;
 }
 
 @media (max-width: 767px) {
   .trend-chart {
-    height: 280px;
+    height: 290px;
   }
 }
 </style>

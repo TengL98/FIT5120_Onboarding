@@ -6,7 +6,15 @@
     </div>
 
     <div v-if="loading" class="chart-loading"></div>
-    <UvTrendChart v-else :times="times" :values="values" />
+    <UvTrendChart
+      v-else
+      :times="times"
+      :values="values"
+      :peak-start="peakStart"
+      :peak-end="peakEnd"
+      :safe-morning-end="safeMorningEnd"
+      :safe-afternoon-start="safeAfternoonStart"
+    />
   </section>
 </template>
 
@@ -25,6 +33,22 @@ defineProps({
   loading: {
     type: Boolean,
     default: false,
+  },
+  peakStart: {
+    type: String,
+    default: null,
+  },
+  peakEnd: {
+    type: String,
+    default: null,
+  },
+  safeMorningEnd: {
+    type: String,
+    default: null,
+  },
+  safeAfternoonStart: {
+    type: String,
+    default: null,
   },
 });
 </script>
