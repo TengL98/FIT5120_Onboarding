@@ -29,6 +29,29 @@ function getPreferredName(address, fallbackName) {
   return fallbackName || city || "Selected location";
 }
 
+export const INVALID_AU_SUBURB_MESSAGE = "This is not an Australian suburb. Please re-enter.";
+
+function getSuburbText(address = {}) {
+  return (
+    address.suburb ||
+    address.neighbourhood ||
+    address.village ||
+    address.town ||
+    address.hamlet ||
+    ""
+  );
+}
+
+export function isValidAustralianSuburbInput(keyword) {
+  const query = String(keyword || "").trim();
+  if (query.length < 2) {
+    return false;
+  }
+
+  // Allow letters, spaces, apostrophes, and hyphens only.
+  return /^[A-Za-z\u00C0-\u024F' -]+$/.test(query);
+}
+
 export function useLocationSearch() {
   const searchLocations = async (keyword) => {
     const query = String(keyword || "").trim();
@@ -55,6 +78,21 @@ export function useLocationSearch() {
     const unique = new Set();
     return payload
       .map((item) => {
+        const address = item?.address || {};
+        const suburb = getSuburbText(address);
+        const city =
+          address.city ||
+          address.city_district ||
+          address.municipality ||
+          address.county ||
+          address.state_district ||
+          "";
+
+        // Keep only entries with suburb-like address info.
+        if (!suburb) {
+          return null;
+        }
+
         const latitude = Number(item?.lat);
         const longitude = Number(item?.lon);
         const key = `${latitude},${longitude}`;
