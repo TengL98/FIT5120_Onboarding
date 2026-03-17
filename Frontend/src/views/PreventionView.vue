@@ -372,7 +372,11 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useRoute } from "vue-router";
 import UvHeroSection from "../components/UvHeroSection.vue";
 import { useGeolocation } from "../composables/useGeolocation";
-import { useLocationSearch } from "../composables/useLocationSearch";
+import {
+  INVALID_AU_SUBURB_MESSAGE,
+  isValidAustralianSuburbInput,
+  useLocationSearch,
+} from "../composables/useLocationSearch";
 import { getUvCategory, getUvColor, getUvShortMessage } from "../composables/useUvRules";
 import { useUvData } from "../composables/useUvData";
 
@@ -888,6 +892,14 @@ watch(searchQuery, (value) => {
     return;
   }
 
+  if (!isValidAustralianSuburbInput(keyword)) {
+    searchSuggestions.value = [];
+    showSuggestions.value = false;
+    searchLoading.value = false;
+    searchError.value = INVALID_AU_SUBURB_MESSAGE;
+    return;
+  }
+
   searchLoading.value = true;
   const token = ++searchToken;
 
@@ -903,7 +915,7 @@ watch(searchQuery, (value) => {
       showSuggestions.value = results.length > 0;
 
       if (!results.length) {
-        searchError.value = "No Australian suburb found. Please search within Australia.";
+        searchError.value = INVALID_AU_SUBURB_MESSAGE;
       }
     } catch (error) {
       if (token !== searchToken) {
