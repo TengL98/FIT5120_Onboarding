@@ -32,6 +32,7 @@ const route = useRoute();
 
 const navItems = [
   { path: "/", label: "Home" },
+  { path: "/dashboard", label: "UV Tracker" },
   { path: "/awareness", label: "Awareness" },
   { path: "/prevention", label: "Prevention" },
 ];

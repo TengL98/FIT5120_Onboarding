@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
 import HomeView from "../views/HomeView.vue";
+import DashboardView from "../views/DashboardView.vue";
 import AwarenessView from "../views/AwarenessView.vue";
 import PreventionView from "../views/PreventionView.vue";
 
@@ -36,6 +37,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: "/", name: "home", component: HomeView, meta: { requiresAuth: true } },
+    {
+      path: "/dashboard",
+      name: "dashboard",
+      component: DashboardView,
+      meta: { requiresAuth: true },
+    },
     {
       path: "/awareness",
       name: "awareness",

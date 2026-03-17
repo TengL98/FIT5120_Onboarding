@@ -1,374 +1,596 @@
 <template>
-  <div>
-    <UvHeroSection
-      :location-name="state.locationName"
-      :current-uv="state.currentUv"
-      :uv-category="state.uvCategory"
-      :uv-short-message="state.uvShortMessage"
-      :uv-color="state.uvColor"
-      :loading="state.loading"
-      :search-query="searchQuery"
-      :search-suggestions="searchSuggestions"
-      :show-suggestions="showSuggestions"
-      :search-loading="searchLoading"
-      :search-error="searchError"
-      :location-mode="state.locationMode"
-      @update:search-query="onSearchQueryUpdate"
-      @open-suggestions="openSuggestions"
-      @close-suggestions="closeSuggestions"
-      @use-current-location="useLiveLocation"
-      @select-location="selectManualLocation"
-    />
+  <section class="home-page" aria-label="SunSense homepage">
+    <div class="home-glow home-glow-a" aria-hidden="true"></div>
+    <div class="home-glow home-glow-b" aria-hidden="true"></div>
 
-    <UvSummaryCard
-      :location-name="state.locationName"
-      :current-uv="state.currentUv"
-      :uv-category="state.uvCategory"
-      :uv-long-advice="state.uvLongAdvice"
-      :uv-color="state.uvColor"
-      :weekday="state.weekday"
-      :today-date="state.todayDate"
-      :peak-window-text="state.peakWindowText"
-      :safe-window-text="state.safeWindowText"
-      :loading="state.loading"
-    />
+    <section class="hero-section mb-5" aria-labelledby="home-hero-title">
+      <div class="hero-shell">
+        <div class="hero-content text-center">
+          <div class="hero-eyebrow-wrap">
+            <p class="section-eyebrow mb-3">SunSense for young Australians</p>
+          </div>
+          <h1 id="home-hero-title" class="hero-title mb-3">
+            Understand today's UV and make protection decisions earlier.
+          </h1>
+          <p class="hero-text mb-4">
+            SunSense helps you check live UV conditions, understand why exposure matters, and turn the number into
+            simple action.
+          </p>
 
-    <UvTrendCard :times="state.hourlyTimes" :values="state.hourlyUv" :loading="state.loading" />
-
-    <QuickActionGrid />
-    <FooterTip />
-
-    <p v-if="state.error" class="text-center text-secondary mt-3 mb-0 small" role="status">
-      {{ state.error }}
-    </p>
-
-    <p v-if="state.debugNote" class="text-center text-secondary mt-2 mb-0 small" role="status">
-      {{ state.debugNote }}
-    </p>
-
-    <section class="soft-card p-3 p-md-4 mt-4" aria-label="UV test panel">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <h2 class="test-heading mb-0">UV Test Panel</h2>
-        <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearUvOverride">
-          Use Live UV
-        </button>
+          <div class="hero-actions" role="group" aria-label="Primary navigation">
+            <RouterLink to="/dashboard" class="cta-btn cta-btn--primary text-decoration-none">
+              Check today's UV
+            </RouterLink>
+            <RouterLink to="/awareness" class="cta-btn cta-btn--secondary text-decoration-none">
+              Learn the risk
+            </RouterLink>
+            <RouterLink to="/prevention" class="cta-btn cta-btn--secondary text-decoration-none">
+              Get protection
+            </RouterLink>
+          </div>
+        </div>
       </div>
-
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <button
-          v-for="value in presetUvValues"
-          :key="value"
-          class="btn btn-sm"
-          :class="isActivePreset(value) ? 'btn-dark' : 'btn-outline-dark'"
-          type="button"
-          @click="setUvOverride(value)"
-        >
-          UV {{ value }}
-        </button>
-      </div>
-
-      <form class="d-flex flex-wrap align-items-center gap-2" @submit.prevent="applyCustomUv">
-        <label for="customUv" class="small text-secondary fw-semibold">Custom UV</label>
-        <input
-          id="customUv"
-          v-model.number="customUvInput"
-          class="form-control form-control-sm custom-uv-input"
-          type="number"
-          min="0"
-          max="20"
-          step="1"
-        />
-        <button class="btn btn-sm btn-primary" type="submit">Apply</button>
-      </form>
     </section>
-  </div>
+
+    <section class="mb-5" aria-labelledby="why-it-matters-title">
+      <div class="section-intro mb-3 mb-md-4">
+        <p class="section-eyebrow mb-2">Why it matters</p>
+        <h2 id="why-it-matters-title" class="section-heading mb-2">
+          UV can be easy to ignore, even when the risk is already there.
+        </h2>
+        <p class="section-copy mb-0">The goal is to make hidden risk easier to notice before exposure becomes a habit.</p>
+      </div>
+
+      <div class="row g-3 g-md-4">
+        <div v-for="item in insightCards" :key="item.title" class="col-12 col-md-4">
+          <article class="insight-card soft-card h-100">
+            <p class="insight-card__value mb-2">{{ item.value }}</p>
+            <h3 class="insight-card__title mb-2">{{ item.title }}</h3>
+            <p class="insight-card__text mb-0" v-html="item.text"></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5" aria-labelledby="pathways-title">
+      <div class="section-intro mb-3 mb-md-4">
+        <p class="section-eyebrow mb-2">Explore SunSense</p>
+        <h2 id="pathways-title" class="section-heading mb-2">Start where you need help most.</h2>
+        <p class="section-copy mb-0">Start with live conditions, explore the visual data, or move straight into protection tools.</p>
+      </div>
+
+      <div class="row g-3 g-md-4">
+        <div v-for="item in pathways" :key="item.title" class="col-12 col-lg-4">
+          <RouterLink :to="item.to" class="pathway-card soft-card h-100 text-decoration-none">
+            <span class="pathway-card__kicker" :class="`pathway-card__kicker--${item.tone}`">
+              {{ item.kicker }}
+            </span>
+            <h3 class="pathway-card__title mt-3 mb-2">{{ item.title }}</h3>
+            <p class="pathway-card__text mb-3">{{ item.text }}</p>
+            <ul class="pathway-list list-unstyled mb-4">
+              <li v-for="point in item.points" :key="point">{{ point }}</li>
+            </ul>
+            <span class="pathway-link">
+              {{ item.cta }}
+            </span>
+          </RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5" aria-labelledby="human-language-title">
+      <div class="human-card soft-card">
+        <div class="row g-4 align-items-center">
+          <div class="col-12 col-lg-5">
+            <p class="section-eyebrow mb-2">Human language</p>
+            <h2 id="human-language-title" class="section-heading mb-2">
+              SunSense explains the number, not just the reading.
+            </h2>
+            <p class="section-copy mb-0">
+              A UV value on its own can be abstract. We translate it into a plain-language message so you know how fast
+              risk can build and what protection makes sense right now.
+            </p>
+          </div>
+
+          <div class="col-12 col-lg-7">
+            <div class="translation-panel">
+              <div class="translation-column translation-column--raw">
+                <p class="translation-label mb-2">Raw UV number</p>
+                <div class="translation-chip">
+                  <span class="translation-value">UV 8</span>
+                </div>
+              </div>
+
+              <div class="translation-divider" aria-hidden="true"></div>
+
+              <div class="translation-column translation-column--meaning">
+                <p class="translation-label mb-2">What that means for you</p>
+                <div class="translation-message">
+                  <p class="translation-risk mb-1">High risk.</p>
+                  <p class="translation-text mb-0">
+                    Your skin can start getting damaged quickly. Use protection, reapply sunscreen, and seek shade
+                    during stronger UV hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5" aria-labelledby="final-cta-title">
+      <div class="final-cta soft-card text-center">
+        <div class="final-cta__eyebrow-wrap">
+          <p class="section-eyebrow mb-2">Ready to check in?</p>
+        </div>
+        <h2 id="final-cta-title" class="section-heading mb-2">See today's UV and get simple guidance fast.</h2>
+        <p class="section-copy final-cta__text mb-4">
+          Open the UV Tracker to check current conditions, today's risk level, and the daily trend.
+        </p>
+        <RouterLink to="/dashboard" class="cta-btn cta-btn--primary text-decoration-none">
+          Go to UV Tracker
+        </RouterLink>
+      </div>
+    </section>
+  </section>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
-import FooterTip from "../components/FooterTip.vue";
-import QuickActionGrid from "../components/QuickActionGrid.vue";
-import UvHeroSection from "../components/UvHeroSection.vue";
-import UvSummaryCard from "../components/UvSummaryCard.vue";
-import UvTrendCard from "../components/UvTrendCard.vue";
-import { useGeolocation } from "../composables/useGeolocation";
-import { useLocationSearch } from "../composables/useLocationSearch";
-import {
-  getUvCategory,
-  getUvColor,
-  getUvLongAdvice,
-  getUvShortMessage,
-} from "../composables/useUvRules";
-import { useUvData } from "../composables/useUvData";
+const insightCards = [
+  {
+    value: "Invisible UV",
+    title: "You cannot always feel when exposure is already doing harm.",
+    text: "<strong>UV is invisible</strong>, so risk can be easy to miss until your skin has already had too much exposure.",
+  },
+  {
+    value: "Daily exposure",
+    title: "Short unplanned time outside can still add up.",
+    text: "<strong>Small exposures still count</strong>, especially when protection gets skipped because the risk does not feel urgent.",
+  },
+  {
+    value: "Long-term impact",
+    title: "Small exposures can add up when protection becomes inconsistent.",
+    text: "<strong>Damage builds over time</strong>, which is why simple daily habits matter before the problem feels urgent.",
+  },
+];
 
-const SAVED_LOCATION_KEY = "ss.selectedLocation";
-
-const state = reactive({
-  loading: true,
-  error: null,
-  locationName: "Melbourne, Australia",
-  latitude: null,
-  longitude: null,
-  currentUv: 6,
-  uvCategory: "High",
-  uvColor: "#f08c00",
-  uvShortMessage: "Current risk: High",
-  uvLongAdvice:
-    "Apply SPF 30+ sunscreen, wear protective clothing, and reduce direct exposure during midday.",
-  weekday: "",
-  todayDate: "",
-  peakWindowText: "",
-  safeWindowText: "",
-  hourlyTimes: [],
-  hourlyUv: [],
-  debugNote: "",
-  liveCurrentUv: null,
-  uvOverride: null,
-  locationMode: "live",
-});
-
-const presetUvValues = [1, 4, 7, 9, 12];
-const customUvInput = ref(6);
-const searchQuery = ref("");
-const searchSuggestions = ref([]);
-const showSuggestions = ref(false);
-const searchLoading = ref(false);
-const searchError = ref("");
-const skipNextSearch = ref(false);
-let searchTimer = null;
-let searchToken = 0;
-
-const { getLocation } = useGeolocation();
-const { getUvData } = useUvData();
-const { searchLocations } = useLocationSearch();
-
-function applyUvNarrative(uv) {
-  state.uvCategory = getUvCategory(uv);
-  state.uvColor = getUvColor(uv);
-  state.uvShortMessage = getUvShortMessage(uv);
-  state.uvLongAdvice = getUvLongAdvice(uv);
-}
-
-function getUvOverrideFromQuery() {
-  const query = new URLSearchParams(window.location.search);
-  const rawUv = query.get("uv");
-
-  if (rawUv === null) {
-    return null;
-  }
-
-  const parsed = Number(rawUv);
-  if (!Number.isFinite(parsed)) {
-    return null;
-  }
-
-  return Math.max(0, Math.min(20, parsed));
-}
-
-function updateUrlWithUv(uvValue) {
-  const url = new URL(window.location.href);
-
-  if (uvValue === null) {
-    url.searchParams.delete("uv");
-  } else {
-    url.searchParams.set("uv", String(Math.round(uvValue)));
-  }
-
-  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-}
-
-function refreshUvPresentation() {
-  const effectiveUv = state.uvOverride ?? state.liveCurrentUv ?? 0;
-  state.currentUv = effectiveUv;
-  applyUvNarrative(effectiveUv);
-
-  if (state.uvOverride !== null) {
-    state.debugNote = `Test mode: current UV is overridden by URL query (?uv=${Math.round(state.uvOverride)}).`;
-  } else {
-    state.debugNote = "";
-  }
-}
-
-function setUvOverride(value) {
-  state.uvOverride = Math.max(0, Math.min(20, Number(value) || 0));
-  customUvInput.value = Math.round(state.uvOverride);
-  updateUrlWithUv(state.uvOverride);
-  refreshUvPresentation();
-}
-
-function clearUvOverride() {
-  state.uvOverride = null;
-  updateUrlWithUv(null);
-  refreshUvPresentation();
-}
-
-function applyCustomUv() {
-  setUvOverride(customUvInput.value);
-}
-
-function saveSelectedLocation(location) {
-  try {
-    const payload = {
-      name: location?.name || "Melbourne, Australia",
-      latitude: Number(location?.latitude),
-      longitude: Number(location?.longitude),
-    };
-
-    if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
-      return;
-    }
-
-    window.localStorage.setItem(SAVED_LOCATION_KEY, JSON.stringify(payload));
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function isActivePreset(value) {
-  return state.uvOverride !== null && Math.round(state.uvOverride) === value;
-}
-
-async function loadHomeData() {
-  state.uvOverride = getUvOverrideFromQuery();
-  customUvInput.value = Math.round(state.uvOverride ?? state.liveCurrentUv ?? 0);
-  await useLiveLocation();
-}
-
-async function applyLocationAndLoadUv(location, mode) {
-  state.loading = true;
-  state.error = null;
-  state.debugNote = "";
-
-  state.locationMode = mode;
-  state.locationName = location.name;
-  state.latitude = location.latitude;
-  state.longitude = location.longitude;
-  saveSelectedLocation(location);
-
-  const uvData = await getUvData(state.latitude, state.longitude);
-
-  state.liveCurrentUv = Number(uvData.currentUv || 0);
-  customUvInput.value = Math.round(state.uvOverride ?? state.liveCurrentUv ?? 0);
-
-  state.weekday = uvData.weekday || "";
-  state.todayDate = uvData.todayDate || "";
-  state.peakWindowText = uvData.peakWindowText || "No data";
-  state.safeWindowText = uvData.safeWindowText || "No data";
-  state.hourlyTimes = uvData.hourlyTimes || [];
-  state.hourlyUv = uvData.hourlyUv || [];
-
-  refreshUvPresentation();
-
-  if (location?.error || uvData.error) {
-    state.error = [location?.error, uvData.error].filter(Boolean).join(" ");
-  }
-
-  state.loading = false;
-}
-
-async function useLiveLocation() {
-  const location = await getLocation();
-  await applyLocationAndLoadUv(location, "live");
-}
-
-async function selectManualLocation(location) {
-  skipNextSearch.value = true;
-  searchQuery.value = location.name;
-  searchSuggestions.value = [];
-  showSuggestions.value = false;
-  searchError.value = "";
-
-  await applyLocationAndLoadUv(location, "manual");
-}
-
-function openSuggestions() {
-  if (searchSuggestions.value.length > 0) {
-    showSuggestions.value = true;
-  }
-}
-
-function closeSuggestions() {
-  window.setTimeout(() => {
-    showSuggestions.value = false;
-  }, 120);
-}
-
-function onSearchQueryUpdate(value) {
-  searchQuery.value = value;
-}
-
-watch(searchQuery, (value) => {
-  if (skipNextSearch.value) {
-    skipNextSearch.value = false;
-    searchLoading.value = false;
-    return;
-  }
-
-  const keyword = String(value || "").trim();
-  searchError.value = "";
-
-  if (searchTimer) {
-    clearTimeout(searchTimer);
-    searchTimer = null;
-  }
-
-  if (keyword.length < 2) {
-    searchSuggestions.value = [];
-    showSuggestions.value = false;
-    searchLoading.value = false;
-    return;
-  }
-
-  searchLoading.value = true;
-  const token = ++searchToken;
-
-  searchTimer = setTimeout(async () => {
-    try {
-      const results = await searchLocations(keyword);
-
-      if (token !== searchToken) {
-        return;
-      }
-
-      searchSuggestions.value = results;
-      showSuggestions.value = results.length > 0;
-      if (!results.length) {
-        searchError.value = "No suburb found. Try another keyword.";
-      }
-    } catch (error) {
-      if (token !== searchToken) {
-        return;
-      }
-
-      searchSuggestions.value = [];
-      showSuggestions.value = false;
-      searchError.value = error?.message || "Unable to search locations.";
-    } finally {
-      if (token === searchToken) {
-        searchLoading.value = false;
-      }
-    }
-  }, 320);
-});
-
-onBeforeUnmount(() => {
-  if (searchTimer) {
-    clearTimeout(searchTimer);
-  }
-});
-
-onMounted(() => {
-  loadHomeData();
-});
+const pathways = [
+  {
+    title: "UV Tracker",
+    kicker: "Today",
+    tone: "warm",
+    text: "Check today's UV, current risk, safer window, peak window, and the daily UV trend for your location.",
+    points: ["Live UV and risk level", "Peak and safer window", "Daily UV trend chart"],
+    cta: "Open UV Tracker",
+    to: "/dashboard",
+  },
+  {
+    title: "Awareness",
+    kicker: "Understand",
+    tone: "sky",
+    text: "Explore two visualisations that show skin cancer impact trends and the monthly UV index trend in Melbourne.",
+    points: ["Skin Cancer Impact Trends", "Monthly UV index trend in Melbourne", "Visual data for awareness"],
+    cta: "Explore Awareness",
+    to: "/awareness",
+  },
+  {
+    title: "Prevention",
+    kicker: "Act",
+    tone: "mint",
+    text: "Get sunscreen advice, clothing guidance, and reminders that help protection fit into everyday life.",
+    points: ["Sunscreen and clothing guidance", "Reminder tools", "Simple next steps you can actually use"],
+    cta: "Open Prevention",
+    to: "/prevention",
+  },
+];
 </script>
 
 <style scoped>
-.test-heading {
-  font-size: 1rem;
+.home-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-glow {
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(42px);
+  pointer-events: none;
+}
+
+.home-glow-a {
+  width: min(440px, 68vw);
+  height: 250px;
+  top: -28px;
+  left: -34px;
+  background: radial-gradient(circle at 30% 30%, rgba(196, 236, 216, 0.7), rgba(196, 236, 216, 0));
+}
+
+.home-glow-b {
+  width: min(420px, 66vw);
+  height: 230px;
+  top: 48%;
+  right: -42px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 222, 188, 0.42), rgba(255, 222, 188, 0));
+}
+
+.hero-shell {
+  padding: 1.1rem 0 0.35rem;
+}
+
+.hero-content {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.insight-card,
+.pathway-card,
+.human-card,
+.final-cta {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 18px 40px rgba(19, 33, 59, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.insight-card,
+.pathway-card {
+  padding: 1.3rem;
+}
+
+.human-card,
+.final-cta {
+  padding: 1.35rem;
+}
+
+.human-card {
+  background:
+    radial-gradient(circle at top left, rgba(212, 241, 223, 0.72), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(227, 238, 255, 0.84), transparent 42%),
+    linear-gradient(180deg, rgba(248, 252, 249, 0.98), rgba(255, 255, 255, 0.92));
+  border-color: rgba(206, 219, 236, 0.82);
+}
+
+.section-intro {
+  max-width: 840px;
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(67, 87, 112, 0.84);
+}
+
+.section-eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(118, 177, 148, 0.95), rgba(244, 183, 108, 0.88));
+}
+
+.hero-eyebrow-wrap,
+.final-cta__eyebrow-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.hero-title {
+  font-size: clamp(2.45rem, 3.6vw, 3.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  color: #132238;
+  max-width: 22ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
+}
+
+.hero-text,
+.section-copy,
+.pathway-card__text,
+.insight-card__text,
+.translation-text {
+  color: rgba(78, 91, 110, 0.92);
+  font-size: 1.02rem;
+  line-height: 1.64;
+  max-width: 68ch;
+}
+
+.hero-text {
+  max-width: 52ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0.75rem 1.2rem;
+  font-weight: 700;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease;
+}
+
+.cta-btn:hover,
+.cta-btn:focus-visible {
+  transform: translateY(-2px);
+}
+
+.cta-btn--primary {
+  color: #ffffff;
+  background: #172034;
+  box-shadow: 0 14px 28px rgba(23, 32, 52, 0.18);
+}
+
+.cta-btn--primary:hover,
+.cta-btn--primary:focus-visible {
+  background: #1d2942;
+  color: #ffffff;
+}
+
+.cta-btn--secondary {
+  color: #172034;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(23, 32, 52, 0.1);
+}
+
+.cta-btn--secondary:hover,
+.cta-btn--secondary:focus-visible {
+  color: #172034;
+  box-shadow: 0 12px 24px rgba(19, 33, 59, 0.1);
+}
+
+.section-heading {
+  font-size: clamp(1.7rem, 2.6vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  font-weight: 750;
+  color: #122237;
+  max-width: 28ch;
+  text-wrap: balance;
+}
+
+.insight-card,
+.pathway-card {
+  transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+}
+
+.insight-card:hover,
+.pathway-card:hover,
+.pathway-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 44px rgba(19, 33, 59, 0.1);
+  border-color: rgba(198, 214, 233, 0.82);
+}
+
+.insight-card__value,
+.translation-label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(86, 100, 121, 0.8);
+}
+
+.insight-card__title,
+.pathway-card__title,
+.translation-risk {
+  color: #162339;
+  font-weight: 800;
+}
+
+.insight-card__title,
+.pathway-card__title {
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.insight-card__text :deep(strong) {
+  color: #162339;
+  font-weight: 800;
+}
+
+.pathway-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: inherit;
+  min-height: 100%;
+}
+
+.pathway-card__kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pathway-card__kicker--warm {
+  background: rgba(255, 234, 212, 0.92);
+  color: #97520f;
+}
+
+.pathway-card__kicker--sky {
+  background: rgba(224, 238, 255, 0.92);
+  color: #375d99;
+}
+
+.pathway-card__kicker--mint {
+  background: rgba(223, 246, 235, 0.95);
+  color: #23704b;
+}
+
+.pathway-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.pathway-list li {
+  position: relative;
+  padding-left: 1rem;
+  color: rgba(78, 91, 110, 0.92);
+  font-size: 0.92rem;
+}
+
+.pathway-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.55rem;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(76, 126, 108, 0.55);
+}
+
+.pathway-link {
+  margin-top: auto;
+  color: #172034;
   font-weight: 700;
 }
 
-.custom-uv-input {
-  width: 90px;
+.translation-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) 1px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.translation-divider {
+  background: linear-gradient(180deg, rgba(190, 205, 224, 0.2), rgba(190, 205, 224, 0.95), rgba(190, 205, 224, 0.2));
+  border-radius: 999px;
+}
+
+.translation-chip,
+.translation-message {
+  border-radius: 22px;
+  border: 1px solid rgba(204, 216, 231, 0.82);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 1rem;
+  min-height: 100%;
+}
+
+.translation-column--raw .translation-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.translation-value {
+  font-size: 2.35rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: #172034;
+}
+
+.translation-risk {
+  font-size: 1.02rem;
+}
+
+.final-cta {
+  background:
+    radial-gradient(circle at top center, rgba(212, 241, 223, 0.6), transparent 48%),
+    linear-gradient(180deg, rgba(252, 254, 252, 0.98), rgba(255, 255, 255, 0.92));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.final-cta__text {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 60ch;
+}
+
+@media (max-width: 991px) {
+  .hero-text,
+  .final-cta__text {
+    max-width: 60ch;
+  }
+
+  .translation-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .translation-divider {
+    width: 100%;
+    height: 1px;
+  }
+}
+
+@media (max-width: 767px) {
+  .insight-card,
+  .pathway-card,
+  .human-card,
+  .final-cta,
+  .translation-chip,
+  .translation-message {
+    border-radius: 24px;
+  }
+
+  .insight-card,
+  .pathway-card,
+  .human-card,
+  .final-cta {
+    padding: 1.1rem;
+  }
+
+  .hero-shell {
+    padding-top: 0.45rem;
+  }
+
+  .hero-title,
+  .section-heading {
+    max-width: none;
+    text-wrap: pretty;
+  }
+
+  .hero-text,
+  .section-copy,
+  .pathway-card__text,
+  .insight-card__text,
+  .translation-text,
+  .final-cta__text {
+    max-width: none;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn,
+  .insight-card,
+  .pathway-card {
+    transition: none;
+  }
 }
 </style>
