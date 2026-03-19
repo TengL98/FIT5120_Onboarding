@@ -5,7 +5,6 @@
 
     <article class="soft-card awareness-card awareness-card--intro p-3 p-md-4 mb-4" aria-label="Awareness guide">
       <header class="mb-3">
-        <p class="awareness-eyebrow mb-1">US2.1 Awareness Theme</p>
         <h1 class="section-heading mb-1">UV is not just about heat. Know it, share it, protect your crew.</h1>
         <p class="chart-subtitle mb-0">
           This page turns Australia UV and skin-cancer data into simple talking points so you can explain the why to
