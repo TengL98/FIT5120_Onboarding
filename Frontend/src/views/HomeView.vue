@@ -32,26 +32,6 @@
       </div>
     </section>
 
-    <section class="mb-5" aria-labelledby="why-it-matters-title">
-      <div class="section-intro mb-3 mb-md-4">
-        <p class="section-eyebrow mb-2">Why it matters</p>
-        <h2 id="why-it-matters-title" class="section-heading mb-2">
-          UV can be easy to ignore, even when the risk is already there.
-        </h2>
-        <p class="section-copy mb-0">The goal is to make hidden risk easier to notice before exposure becomes a habit.</p>
-      </div>
-
-      <div class="row g-3 g-md-4">
-        <div v-for="item in insightCards" :key="item.title" class="col-12 col-md-4">
-          <article class="insight-card soft-card h-100">
-            <p class="insight-card__value mb-2">{{ item.value }}</p>
-            <h3 class="insight-card__title mb-2">{{ item.title }}</h3>
-            <p class="insight-card__text mb-0" v-html="item.text"></p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <section class="mb-5" aria-labelledby="pathways-title">
       <div class="section-intro mb-3 mb-md-4">
         <p class="section-eyebrow mb-2">Explore SunSense</p>
@@ -137,24 +117,6 @@
 </template>
 
 <script setup>
-const insightCards = [
-  {
-    value: "Invisible UV",
-    title: "You cannot always feel when exposure is already doing harm.",
-    text: "<strong>UV is invisible</strong>, so risk can be easy to miss until your skin has already had too much exposure.",
-  },
-  {
-    value: "Daily exposure",
-    title: "Short unplanned time outside can still add up.",
-    text: "<strong>Small exposures still count</strong>, especially when protection gets skipped because the risk does not feel urgent.",
-  },
-  {
-    value: "Long-term impact",
-    title: "Small exposures can add up when protection becomes inconsistent.",
-    text: "<strong>Damage builds over time</strong>, which is why simple daily habits matter before the problem feels urgent.",
-  },
-];
-
 const pathways = [
   {
     title: "UV Tracker",
@@ -228,7 +190,6 @@ const pathways = [
   align-items: center;
 }
 
-.insight-card,
 .pathway-card,
 .human-card,
 .final-cta {
@@ -238,7 +199,6 @@ const pathways = [
   box-shadow: 0 18px 40px rgba(19, 33, 59, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.insight-card,
 .pathway-card {
   padding: 1.3rem;
 }
@@ -302,7 +262,6 @@ const pathways = [
 .hero-text,
 .section-copy,
 .pathway-card__text,
-.insight-card__text,
 .translation-text {
   color: rgba(78, 91, 110, 0.92);
   font-size: 1.02rem;
@@ -373,12 +332,10 @@ const pathways = [
   text-wrap: balance;
 }
 
-.insight-card,
 .pathway-card {
   transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
 }
 
-.insight-card:hover,
 .pathway-card:hover,
 .pathway-card:focus-visible {
   transform: translateY(-3px);
@@ -386,7 +343,6 @@ const pathways = [
   border-color: rgba(198, 214, 233, 0.82);
 }
 
-.insight-card__value,
 .translation-label {
   font-size: 0.76rem;
   font-weight: 800;
@@ -395,22 +351,15 @@ const pathways = [
   color: rgba(86, 100, 121, 0.8);
 }
 
-.insight-card__title,
 .pathway-card__title,
 .translation-risk {
   color: #162339;
   font-weight: 800;
 }
 
-.insight-card__title,
 .pathway-card__title {
   font-size: 1.15rem;
   line-height: 1.25;
-}
-
-.insight-card__text :deep(strong) {
-  color: #162339;
-  font-weight: 800;
 }
 
 .pathway-card {
@@ -549,7 +498,6 @@ const pathways = [
 }
 
 @media (max-width: 767px) {
-  .insight-card,
   .pathway-card,
   .human-card,
   .final-cta,
@@ -558,7 +506,6 @@ const pathways = [
     border-radius: 24px;
   }
 
-  .insight-card,
   .pathway-card,
   .human-card,
   .final-cta {
@@ -578,7 +525,6 @@ const pathways = [
   .hero-text,
   .section-copy,
   .pathway-card__text,
-  .insight-card__text,
   .translation-text,
   .final-cta__text {
     max-width: none;
@@ -588,7 +534,6 @@ const pathways = [
 
 @media (prefers-reduced-motion: reduce) {
   .cta-btn,
-  .insight-card,
   .pathway-card {
     transition: none;
   }
