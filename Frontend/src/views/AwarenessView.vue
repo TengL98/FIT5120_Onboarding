@@ -895,13 +895,13 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: rgba(239, 143, 52, 0.15);
   border: 1px solid rgba(239, 143, 52, 0.28);
-  left: 4px;
+  left: calc(50% + 0px);
   transition: left 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 1;
 }
 
 .toggle-button.active .toggle-slider {
-  left: calc(50% + 0px);
+  left: 4px;
 }
 
 .toggle-button.active .toggle-option-1 {
