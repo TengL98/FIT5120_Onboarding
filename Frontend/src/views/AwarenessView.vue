@@ -40,19 +40,39 @@
           <h2 class="section-heading mb-1">Skin Cancer Impact Trends</h2>
           <p class="chart-subtitle mb-0">Annual incidence rate in Australia (per 100,000 people)</p>
         </div>
-        <span class="chart-kicker">MSC vs NMSC</span>
+        <button class="toggle-button" :class="{ active: showDeadlier }" @click="showDeadlier = !showDeadlier" aria-label="Toggle between cancer types">
+          <span class="toggle-option-1">Deadlier</span>
+          <span class="toggle-slider"></span>
+          <span class="toggle-option-2">More Common</span>
+        </button>
       </header>
 
-      <div class="chart-reading-note mb-3" aria-label="How to read this chart">
-        <p class="chart-reading-title mb-1">Quick read</p>
-        <p class="chart-reading-text mb-0">
-          Look at the long-term direction, not one single year. Both lines trend upward over time, which means the risk
-          burden is persistent and worth acting on early.
-        </p>
+      <div v-if="showDeadlier" class="chart-fade-in">
+        <div class="chart-reading-note mb-3" aria-label="How to read this chart">
+          <p class="chart-reading-title mb-1">Quick read</p>
+          <p class="chart-reading-text mb-0">
+            Look at the long-term direction, not one single year. The trend shows persistent increase over time, which means the risk burden is persistent and worth acting on early.
+          </p>
+        </div>
+
+        <div class="chart-scroll-no-scroll" aria-label="Deadlier skin cancer chart">
+          <div ref="mscChartRef" class="chart-canvas"></div>
+        </div>
+        <p class="chart-type-label">Deadlier Skin Cancer</p>
       </div>
 
-      <div class="chart-scroll" aria-label="Skin cancer impact trends chart scroll container">
-        <div ref="mortalityChartRef" class="chart-canvas"></div>
+      <div v-else class="chart-fade-in">
+        <div class="chart-reading-note mb-3" aria-label="How to read this chart">
+          <p class="chart-reading-title mb-1">Quick read</p>
+          <p class="chart-reading-text mb-0">
+            Look at the long-term direction, not one single year. The trend shows persistent increase over time, which means the risk burden is persistent and worth acting on early.
+          </p>
+        </div>
+
+        <div class="chart-scroll-no-scroll" aria-label="More common skin cancer chart">
+          <div ref="nmscChartRef" class="chart-canvas"></div>
+        </div>
+        <p class="chart-type-label">More Common Skin Cancer</p>
       </div>
     </article>
 
@@ -82,13 +102,16 @@
 
 <script setup>
 import * as echarts from "echarts";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from "vue";
 
-const mortalityChartRef = ref(null);
+const mscChartRef = ref(null);
+const nmscChartRef = ref(null);
 const tempUvChartRef = ref(null);
+const showDeadlier = ref(true);
 const pageReady = ref(false);
 
-let mortalityChart = null;
+let mscChart = null;
+let nmscChart = null;
 let tempUvChart = null;
 
 const mscColor = "#ef8f34";
@@ -160,12 +183,12 @@ const keyInsights = computed(() => {
 
   return [
     {
-      title: "MSC long-term shift",
+      title: "Deadlier skin cancer trend",
       value: `${formatSignedPercent(mscChange)} since ${firstCancer.year}`,
       note: `Person rate changed from ${firstCancer.mscPersonRate.toFixed(1)} to ${lastCancer.mscPersonRate.toFixed(1)} per 100,000 people.`,
     },
     {
-      title: "NMSC long-term shift",
+      title: "More common skin cancer trend",
       value: `${formatSignedPercent(nmscChange)} since ${firstCancer.year}`,
       note: `Person rate changed from ${firstCancer.nmscPersonRate.toFixed(1)} to ${lastCancer.nmscPersonRate.toFixed(1)} per 100,000 people.`,
     },
@@ -262,7 +285,7 @@ async function loadAwarenessVisualizations() {
   awarenessData.value = normalizeVisualizationsPayload(payload);
 }
 
-function mortalityTooltipFormatter(params) {
+function mscTooltipFormatter(params) {
   if (!params.length) {
     return "";
   }
@@ -274,29 +297,44 @@ function mortalityTooltipFormatter(params) {
 
   return [
     `<div style="font-weight:700;margin-bottom:6px;">Year: ${row.year}</div>`,
-    `<div style="font-weight:700;color:${mscColor};margin-bottom:2px;">Melanoma Skin Cancer (MSC) (per 100,000 people)</div>`,
+    `<div style="font-weight:700;color:${mscColor};margin-bottom:2px;">Deadlier Skin Cancer (per 100,000 people)</div>`,
     `<div style="margin-bottom:2px;">Male: ${row.mscMaleRate.toFixed(2)}</div>`,
     `<div style="margin-bottom:2px;">Female: ${row.mscFemaleRate.toFixed(2)}</div>`,
-    `<div style="margin-bottom:6px;">Person: ${row.mscPersonRate.toFixed(2)}</div>`,
-    `<div style="font-weight:700;color:${nmscColor};margin-bottom:2px;">Non-Melanoma Skin Cancer (NMSC) (per 100,000 people)</div>`,
+    `<div>Person: ${row.mscPersonRate.toFixed(2)}</div>`,
+  ].join("");
+}
+
+function nmscTooltipFormatter(params) {
+  if (!params.length) {
+    return "";
+  }
+
+  const row = awarenessData.value.skinCancerImpact.rows[params[0].dataIndex];
+  if (!row) {
+    return "";
+  }
+
+  return [
+    `<div style="font-weight:700;margin-bottom:6px;">Year: ${row.year}</div>`,
+    `<div style="font-weight:700;color:${nmscColor};margin-bottom:2px;">More Common Skin Cancer (per 100,000 people)</div>`,
     `<div style="margin-bottom:2px;">Male: ${row.nmscMaleRate.toFixed(2)}</div>`,
     `<div style="margin-bottom:2px;">Female: ${row.nmscFemaleRate.toFixed(2)}</div>`,
     `<div>Person: ${row.nmscPersonRate.toFixed(2)}</div>`,
   ].join("");
 }
 
-function initMortalityChart() {
-  if (!mortalityChartRef.value) {
+function initMscChart() {
+  if (!mscChartRef.value) {
     return;
   }
 
-  mortalityChart = echarts.init(mortalityChartRef.value, null, { renderer: "canvas" });
+  mscChart = echarts.init(mscChartRef.value, null, { renderer: "canvas" });
 
-  mortalityChart.setOption({
+  mscChart.setOption({
     animationDuration: 850,
     animationEasing: "cubicOut",
-    color: [mscColor, nmscColor],
-    grid: { left: 84, right: 84, top: 36, bottom: 88, containLabel: true },
+    color: [mscColor],
+    grid: { left: 84, right: 84, top: 36, bottom: 48, containLabel: true },
     tooltip: {
       trigger: "axis",
       axisPointer: {
@@ -308,7 +346,7 @@ function initMortalityChart() {
       borderWidth: 1,
       textStyle: { color: "#1f2a3d", fontFamily: "Manrope, Segoe UI, sans-serif" },
       extraCssText: "backdrop-filter: blur(8px); box-shadow: 0 14px 34px rgba(19,33,59,.14); border-radius: 14px;",
-      formatter: mortalityTooltipFormatter,
+      formatter: mscTooltipFormatter,
     },
     legend: {
       top: 0,
@@ -317,10 +355,7 @@ function initMortalityChart() {
       itemWidth: 14,
       itemHeight: 6,
       textStyle: { color: "#607086", fontWeight: 600 },
-      data: [
-        "Melanoma Skin Cancer (MSC)",
-        "Non-Melanoma Skin Cancer (NMSC)",
-      ],
+      data: ["Deadlier Skin Cancer"],
     },
     xAxis: {
       type: "category",
@@ -329,35 +364,20 @@ function initMortalityChart() {
       axisLine: { lineStyle: { color: "#d9e2ee" } },
       axisLabel: { color: "#718097", fontWeight: 600 },
     },
-    yAxis: [
-      {
-        type: "value",
-        name: "MSC rate (/100,000 people)",
-        position: "left",
-        nameLocation: "middle",
-        nameGap: 62,
-        nameRotate: 90,
-        nameTextStyle: { color: mscColor, fontWeight: 700 },
-        splitLine: { lineStyle: { color: "#edf1f7" } },
-        axisLabel: { color: "#6f7f95" },
-      },
-      {
-        type: "value",
-        name: "NMSC rate (/100,000 people)",
-        position: "right",
-        nameLocation: "middle",
-        nameGap: 62,
-        nameRotate: 270,
-        nameTextStyle: { color: nmscColor, fontWeight: 700 },
-        splitLine: { show: false },
-        axisLabel: { color: "#6f7f95" },
-      },
-    ],
+    yAxis: {
+      type: "value",
+      name: "Incidence rate (/100,000 people)",
+      nameLocation: "middle",
+      nameGap: 52,
+      nameRotate: 90,
+      nameTextStyle: { color: mscColor, fontWeight: 700 },
+      splitLine: { lineStyle: { color: "#edf1f7" } },
+      axisLabel: { color: "#6f7f95" },
+    },
     series: [
       {
-        name: "Melanoma Skin Cancer (MSC)",
+        name: "Deadlier Skin Cancer",
         type: "line",
-        yAxisIndex: 0,
         smooth: true,
         symbol: "circle",
         symbolSize: 5,
@@ -373,10 +393,65 @@ function initMortalityChart() {
         },
         data: awarenessData.value.skinCancerImpact.rows.map((item) => item.mscPersonRate),
       },
-      {
-        name: "Non-Melanoma Skin Cancer (NMSC)",
+    ],
+  });
+}
+
+function initNmscChart() {
+  if (!nmscChartRef.value) {
+    return;
+  }
+
+  nmscChart = echarts.init(nmscChartRef.value, null, { renderer: "canvas" });
+
+  nmscChart.setOption({
+    animationDuration: 850,
+    animationEasing: "cubicOut",
+    color: [nmscColor],
+    grid: { left: 84, right: 84, top: 36, bottom: 48, containLabel: true },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
         type: "line",
-        yAxisIndex: 1,
+        lineStyle: { color: "rgba(60, 73, 94, 0.24)", width: 1.4 },
+      },
+      backgroundColor: "rgba(255,255,255,0.92)",
+      borderColor: "rgba(19,33,59,0.09)",
+      borderWidth: 1,
+      textStyle: { color: "#1f2a3d", fontFamily: "Manrope, Segoe UI, sans-serif" },
+      extraCssText: "backdrop-filter: blur(8px); box-shadow: 0 14px 34px rgba(19,33,59,.14); border-radius: 14px;",
+      formatter: nmscTooltipFormatter,
+    },
+    legend: {
+      top: 0,
+      left: "center",
+      icon: "roundRect",
+      itemWidth: 14,
+      itemHeight: 6,
+      textStyle: { color: "#607086", fontWeight: 600 },
+      data: ["More Common Skin Cancer"],
+    },
+    xAxis: {
+      type: "category",
+      boundaryGap: false,
+      data: awarenessData.value.skinCancerImpact.rows.map((item) => item.year),
+      axisLine: { lineStyle: { color: "#d9e2ee" } },
+      axisLabel: { color: "#718097", fontWeight: 600 },
+    },
+    yAxis: {
+      type: "value",
+      name: "Incidence rate (/100,000 people)",
+      nameLocation: "middle",
+      nameGap: 52,
+      nameRotate: 90,
+      nameTextStyle: { color: nmscColor, fontWeight: 700 },
+      splitLine: { lineStyle: { color: "#edf1f7" } },
+      axisLabel: { color: "#6f7f95" },
+    },
+    series: [
+      {
+        name: "More Common Skin Cancer",
+        type: "line",
         smooth: true,
         symbol: "circle",
         symbolSize: 5,
@@ -393,30 +468,6 @@ function initMortalityChart() {
         data: awarenessData.value.skinCancerImpact.rows.map((item) => item.nmscPersonRate),
       },
     ],
-    dataZoom: [
-      {
-        type: "inside",
-        start: 45,
-        end: 100,
-      },
-      {
-        type: "slider",
-        height: 22,
-        bottom: 18,
-        start: 45,
-        end: 100,
-        borderColor: "rgba(214, 224, 236, 0.9)",
-        fillerColor: "rgba(99, 116, 143, 0.18)",
-        backgroundColor: "rgba(245, 248, 252, 0.9)",
-        handleStyle: {
-          color: "#ffffff",
-          borderColor: "#93a2b8",
-          borderWidth: 1,
-          shadowBlur: 6,
-          shadowColor: "rgba(60, 74, 96, 0.2)",
-        },
-      },
-    ],
   });
 }
 
@@ -431,7 +482,7 @@ function initTempUvChart() {
     animationDuration: 850,
     animationEasing: "cubicOut",
     color: [uvColor, tempColor],
-    grid: { left: 62, right: 62, top: 36, bottom: 96 },
+    grid: { left: 62, right: 62, top: 36, bottom: 48 },
     tooltip: {
       trigger: "axis",
       axisPointer: {
@@ -531,37 +582,28 @@ function initTempUvChart() {
         data: awarenessData.value.uvTemperatureTrend.map((item) => item.temperature),
       },
     ],
-    dataZoom: [
-      {
-        type: "inside",
-        start: 62,
-        end: 100,
-      },
-      {
-        type: "slider",
-        height: 22,
-        bottom: 20,
-        start: 62,
-        end: 100,
-        borderColor: "rgba(214, 224, 236, 0.9)",
-        fillerColor: "rgba(99, 116, 143, 0.18)",
-        backgroundColor: "rgba(245, 248, 252, 0.9)",
-        handleStyle: {
-          color: "#ffffff",
-          borderColor: "#93a2b8",
-          borderWidth: 1,
-          shadowBlur: 6,
-          shadowColor: "rgba(60, 74, 96, 0.2)",
-        },
-      },
-    ],
   });
 }
 
 function handleResize() {
-  mortalityChart?.resize();
+  mscChart?.resize();
+  nmscChart?.resize();
   tempUvChart?.resize();
 }
+
+watch(showDeadlier, async () => {
+  if (showDeadlier.value) {
+    nmscChart?.dispose();
+    nmscChart = null;
+    await nextTick();
+    initMscChart();
+  } else {
+    mscChart?.dispose();
+    mscChart = null;
+    await nextTick();
+    initNmscChart();
+  }
+});
 
 onMounted(() => {
   loadAwarenessVisualizations()
@@ -572,7 +614,8 @@ onMounted(() => {
       window.requestAnimationFrame(() => {
         pageReady.value = true;
       });
-      initMortalityChart();
+      initMscChart();
+      initNmscChart();
       initTempUvChart();
     });
 
@@ -581,7 +624,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
-  mortalityChart?.dispose();
+  mscChart?.dispose();
+  nmscChart?.dispose();
   tempUvChart?.dispose();
 });
 </script>
@@ -811,6 +855,65 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(217, 226, 238, 0.9);
 }
 
+.toggle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 220px;
+  height: 32px;
+  padding: 0 8px;
+  border: none;
+  background: rgba(242, 245, 250, 0.95);
+  border: 1px solid rgba(207, 220, 237, 0.85);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 280ms ease;
+  position: relative;
+}
+
+.toggle-button:hover {
+  background: rgba(232, 240, 250, 0.98);
+  border-color: rgba(177, 200, 231, 0.9);
+}
+
+.toggle-option-1,
+.toggle-option-2 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(80, 100, 130, 0.8);
+  letter-spacing: 0.01em;
+  transition: color 280ms ease;
+  flex: 1;
+  text-align: center;
+  z-index: 2;
+}
+
+.toggle-slider {
+  position: absolute;
+  width: calc(50% - 4px);
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(239, 143, 52, 0.15);
+  border: 1px solid rgba(239, 143, 52, 0.28);
+  left: 4px;
+  transition: left 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.toggle-button.active .toggle-slider {
+  left: calc(50% + 0px);
+}
+
+.toggle-button.active .toggle-option-1 {
+  color: #ef8f34;
+  font-weight: 800;
+}
+
+.toggle-button:not(.active) .toggle-option-2 {
+  color: rgba(47, 166, 90, 0.8);
+  font-weight: 800;
+}
+
 .chart-scroll {
   width: 100%;
   overflow-x: auto;
@@ -822,14 +925,45 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(224, 232, 243, 0.8);
 }
 
+.chart-scroll-no-scroll {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(247, 250, 255, 0.7), rgba(255, 255, 255, 0.45));
+  border: 1px solid rgba(224, 232, 243, 0.8);
+  padding-bottom: 0.35rem;
+}
+
+.chart-fade-in {
+  animation: fadeInChart 380ms ease both;
+}
+
+@keyframes fadeInChart {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.chart-type-label {
+  text-align: center;
+  margin-top: 0.8rem;
+  font-size: 0.81rem;
+  font-weight: 600;
+  color: rgba(91, 103, 122, 0.76);
+  letter-spacing: 0.01em;
+}
+
 .chart-canvas {
-  min-width: 1000px;
+  width: 100%;
   height: 392px;
 }
 
 @media (max-width: 991px) {
   .chart-canvas {
-    min-width: 820px;
+    width: 100%;
     height: 360px;
   }
 }
@@ -853,14 +987,14 @@ onBeforeUnmount(() => {
   }
 
   .chart-canvas {
-    min-width: 680px;
+    width: 100%;
     height: 340px;
   }
 }
 
 @media (max-width: 575px) {
   .chart-canvas {
-    min-width: 560px;
+    width: 100%;
     height: 300px;
   }
 }
