@@ -19,7 +19,7 @@
       </p>
 
       <div class="hero-search-wrap" role="search" aria-label="Location search">
-        <label for="heroSearch" class="visually-hidden">Search suburb</label>
+        <label for="heroSearch" class="visually-hidden">Search Australian location</label>
         <div class="hero-search-field">
           <span class="hero-search-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,7 +32,7 @@
             :value="searchQuery"
             class="hero-search-input"
             type="text"
-            placeholder="Search suburb"
+            placeholder="Search Australian suburbs"
             autocomplete="off"
             @input="emit('update:search-query', $event.target.value)"
             @focus="emit('open-suggestions')"

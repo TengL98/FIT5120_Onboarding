@@ -36,14 +36,14 @@
         No saved location found. We are currently using Melbourne as default.
       </p>
 
-      <label for="preventionSuburbSearch" class="small fw-semibold text-secondary mb-2">Enter suburb</label>
+      <label for="preventionSuburbSearch" class="small fw-semibold text-secondary mb-2">Search Australian suburbs</label>
       <div class="location-search-wrap">
         <input
           id="preventionSuburbSearch"
           v-model.trim="searchQuery"
           class="form-control location-search-input"
           type="text"
-          placeholder="e.g. Carlton"
+          placeholder="e.g. Carlton, Melbourne"
           autocomplete="off"
           @focus="openSuggestions"
           @blur="closeSuggestions"
