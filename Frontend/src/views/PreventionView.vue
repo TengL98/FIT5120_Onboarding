@@ -309,46 +309,6 @@
       </div>
     </section>
 
-    <section class="soft-card p-3 p-md-4 mt-5" aria-label="UV test panel">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <h2 class="test-heading mb-0">UV Test Panel</h2>
-        <button class="btn btn-sm btn-outline-secondary" type="button" @click="clearUvOverride">
-          Use Live UV
-        </button>
-      </div>
-
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <button
-          v-for="value in presetUvValues"
-          :key="value"
-          class="btn btn-sm"
-          :class="isActivePreset(value) ? 'btn-dark' : 'btn-outline-dark'"
-          type="button"
-          @click="setUvOverride(value)"
-        >
-          UV {{ value }}
-        </button>
-      </div>
-
-      <form class="d-flex flex-wrap align-items-center gap-2" @submit.prevent="applyCustomUv">
-        <label for="preventionCustomUv" class="small text-secondary fw-semibold">Custom UV</label>
-        <input
-          id="preventionCustomUv"
-          v-model.number="customUvInput"
-          class="form-control form-control-sm custom-uv-input"
-          type="number"
-          min="0"
-          max="20"
-          step="1"
-        />
-        <button class="btn btn-sm btn-primary" type="submit">Apply</button>
-      </form>
-
-      <p v-if="state.debugNote" class="small text-secondary mt-2 mb-0" role="status">
-        {{ state.debugNote }}
-      </p>
-    </section>
-
     <div v-if="showReminderModal" class="timer-modal-backdrop" role="presentation">
       <div
         class="timer-modal"
