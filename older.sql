@@ -51,7 +51,19 @@ CREATE TABLE street_furniture_clean (
 
 
 UPDATE landmarks_clean
-SET geom = ST_GeomFromGeoJSON(geometry);
+SET geom =
+ST_SRID(
+    ST_GeomFromText(
+        CONCAT(
+            'POINT(',
+            JSON_EXTRACT(geometry, '$.coordinates[0]'),
+            ' ',
+            JSON_EXTRACT(geometry, '$.coordinates[1]'),
+            ')'
+        )
+    ),
+    4326
+);
 
 UPDATE public_toilets_clean
 SET geom =
@@ -69,5 +81,17 @@ ST_SRID(
 );
 
 UPDATE street_furniture_clean
-SET geom = ST_GeomFromGeoJSON(geometry);
+SET geom =
+ST_SRID(
+    ST_GeomFromText(
+        CONCAT(
+            'POINT(',
+            JSON_EXTRACT(geometry, '$.coordinates[0]'),
+            ' ',
+            JSON_EXTRACT(geometry, '$.coordinates[1]'),
+            ')'
+        )
+    ),
+    4326
+);
 
